@@ -36,18 +36,9 @@ std::size_t AnimatorComponent::getAnimationCount() const
 	return mAnimations.size();
 }
 
-Animation& AnimatorComponent::addAnimation(const std::string& name, const std::string& animationName)
+void AnimatorComponent::addAnimation(const std::string& name, const std::string& animationName)
 {
-	auto itr = mAnimations.find(name);
-	if (itr != mAnimations.end())
-	{
-		return itr->second;
-	}
-	else
-	{
-		mAnimations[name] = getApplication().getResource<Animation>(animationName);
-		return mAnimations[name];
-	}
+	mAnimations[name] = getApplication().getResource<Animation>(animationName);
 }
 
 void AnimatorComponent::removeAnimation(std::string const& name)
@@ -115,7 +106,7 @@ Animation::Frame& AnimatorComponent::getActualFrame()
 
 void AnimatorComponent::update(sf::Time dt)
 {
-	if (mPlaying)
+	if (mPlaying && mActualAnimation != "")
 	{
 		mTimeElapsed += dt;
 		sf::Time t = getActualFrame().duration;

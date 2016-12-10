@@ -58,6 +58,8 @@ class Application
 		static TimeSystem& getTime();
 		static InputSystem& getInputs();
 
+		static std::string getDataPath();
+
         //
         // Audio
         //

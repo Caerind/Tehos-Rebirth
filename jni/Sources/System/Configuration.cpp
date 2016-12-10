@@ -13,6 +13,7 @@ Configuration::~Configuration()
 
 bool Configuration::loadFromFile(const std::string& filename)
 {
+	mFilename = filename;
 	std::ifstream file(filename);
 	if (file.is_open())
 	{
@@ -37,13 +38,11 @@ bool Configuration::loadFromFile(const std::string& filename)
 		}
 		file.close();
 		setLoaded(false);
-		mFilename = filename;
 		return true;
 	}
 	else
 	{
 		setLoaded(false);
-		mFilename = "";
 		return false;
 	}
 }
@@ -106,17 +105,12 @@ const std::string& Configuration::getFilename()
 	return mFilename;
 }
 
-void Configuration::setProperty(const std::string& id, const std::string& value)
-{
-	mProperties[id] = value;
-}
-
 std::string Configuration::getProperty(const std::string& id) const
 {
 	auto itr = mProperties.find(id);
 	if (itr != mProperties.end())
 	{
-		return itr->second;
+		return itr->second.as<std::string>();
 	}
 	return "";
 }

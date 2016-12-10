@@ -31,7 +31,7 @@ class AnimatorComponent : public SceneComponent
 
 		std::size_t getAnimationCount() const;
 
-		Animation& addAnimation(const std::string& name, const std::string& animationName);
+		void addAnimation(const std::string& name, const std::string& animationName);
 
 		void removeAnimation(std::string const& name);
 

@@ -124,9 +124,9 @@ Actor::Ptr Scene::getActor(std::string const & id) const
 	std::size_t size = mActors.size();
 	for (std::size_t i = 0; i < size; i++)
 	{
-		if (mActors[i]->getId() == id)
+		if (mActors.at(i)->getId() == id)
 		{
-			return mActors[i];
+			return mActors.at(i);
 		}
 	}
 	return nullptr;

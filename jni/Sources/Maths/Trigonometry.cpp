@@ -4,7 +4,19 @@ namespace ke
 {
 
 	float pi() { return 3.141592653589793f; }
-	float radToDeg(float rad) { return 57.29577951308233f * rad; }
+	float radToDeg(float rad) 
+	{ 
+		float angle = 57.29577951308233f * rad;
+		while (angle < 0.f)
+		{
+			angle += 360.f;
+		}
+		while (angle > 360.f)
+		{
+			angle -= 360.f;
+		}
+		return angle;
+	}
 	float degToRad(float deg) { return 0.01745329251994f * deg; }
 	float cos(float deg) { return std::cos(degToRad(deg)); }
 	float sin(float deg) { return std::sin(degToRad(deg)); }

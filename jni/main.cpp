@@ -3,8 +3,64 @@
 #include "Sources/System/Joystick.hpp"
 #include "Sources/Core/Scene.hpp"
 
-#include "MyActor.hpp"
-#include "MyObject.hpp"
+#include "States/GameState.hpp"
+
+void generateAnimation(const std::string& animation)
+{
+	// Idle
+	ke::Animation& idleEast = ke::Application::getResource<ke::Animation>(animation + "-idle-east");
+	idleEast.addFrame(animation, sf::IntRect(0, 0, 64, 64), sf::seconds(5.f));
+	ke::Animation& idleNorth = ke::Application::getResource<ke::Animation>(animation + "-idle-north");
+	idleNorth.addFrame(animation, sf::IntRect(0, 64, 64, 64), sf::seconds(5.f));
+	ke::Animation& idleWest = ke::Application::getResource<ke::Animation>(animation + "-idle-west");
+	idleWest.addFrame(animation, sf::IntRect(0, 128, 64, 64), sf::seconds(5.f));
+	ke::Animation& idleSouth = ke::Application::getResource<ke::Animation>(animation + "-idle-south");
+	idleSouth.addFrame(animation, sf::IntRect(0, 192, 64, 64), sf::seconds(5.f));
+
+	// Walk
+	ke::Animation& walkEast = ke::Application::getResource<ke::Animation>(animation + "-walk-east");
+	walkEast.addFrame(animation, sf::IntRect(0, 0, 64, 64), sf::seconds(0.2f));
+	walkEast.addFrame(animation, sf::IntRect(64, 0, 64, 64), sf::seconds(0.2f));
+	walkEast.addFrame(animation, sf::IntRect(128, 0, 64, 64), sf::seconds(0.2f));
+	walkEast.addFrame(animation, sf::IntRect(192, 0, 64, 64), sf::seconds(0.2f));
+	ke::Animation& walkNorth = ke::Application::getResource<ke::Animation>(animation + "-walk-north");
+	walkNorth.addFrame(animation, sf::IntRect(0, 64, 64, 64), sf::seconds(0.2f));
+	walkNorth.addFrame(animation, sf::IntRect(64, 64, 64, 64), sf::seconds(0.2f));
+	walkNorth.addFrame(animation, sf::IntRect(128, 64, 64, 64), sf::seconds(0.2f));
+	walkNorth.addFrame(animation, sf::IntRect(192, 64, 64, 64), sf::seconds(0.2f));
+	ke::Animation& walkWest = ke::Application::getResource<ke::Animation>(animation + "-walk-west");
+	walkWest.addFrame(animation, sf::IntRect(0, 128, 64, 64), sf::seconds(0.2f));
+	walkWest.addFrame(animation, sf::IntRect(64, 128, 64, 64), sf::seconds(0.2f));
+	walkWest.addFrame(animation, sf::IntRect(128, 128, 64, 64), sf::seconds(0.2f));
+	walkWest.addFrame(animation, sf::IntRect(192, 128, 64, 64), sf::seconds(0.2f));
+	ke::Animation& walkSouth = ke::Application::getResource<ke::Animation>(animation + "-walk-south");
+	walkSouth.addFrame(animation, sf::IntRect(0, 192, 64, 64), sf::seconds(0.2f));
+	walkSouth.addFrame(animation, sf::IntRect(64, 192, 64, 64), sf::seconds(0.2f));
+	walkSouth.addFrame(animation, sf::IntRect(128, 192, 64, 64), sf::seconds(0.2f));
+	walkSouth.addFrame(animation, sf::IntRect(192, 192, 64, 64), sf::seconds(0.2f));
+
+	// Atk
+	ke::Animation& atkEast = ke::Application::getResource<ke::Animation>(animation + "-atk-east");
+	atkEast.addFrame(animation, sf::IntRect(0, 0, 64, 64), sf::seconds(0.2f));
+	atkEast.addFrame(animation, sf::IntRect(256, 0, 64, 64), sf::seconds(0.2f));
+	atkEast.addFrame(animation, sf::IntRect(320, 0, 64, 64), sf::seconds(0.2f));
+	atkEast.addFrame(animation, sf::IntRect(256, 0, 64, 64), sf::seconds(0.2f));
+	ke::Animation& atkNorth = ke::Application::getResource<ke::Animation>(animation + "-atk-north");
+	atkNorth.addFrame(animation, sf::IntRect(0, 64, 64, 64), sf::seconds(0.2f));
+	atkNorth.addFrame(animation, sf::IntRect(256, 64, 64, 64), sf::seconds(0.2f));
+	atkNorth.addFrame(animation, sf::IntRect(320, 64, 64, 64), sf::seconds(0.2f));
+	atkNorth.addFrame(animation, sf::IntRect(256, 64, 64, 64), sf::seconds(0.2f));
+	ke::Animation& atkWest = ke::Application::getResource<ke::Animation>(animation + "-atk-west");
+	atkWest.addFrame(animation, sf::IntRect(0, 128, 64, 64), sf::seconds(0.2f));
+	atkWest.addFrame(animation, sf::IntRect(256, 128, 64, 64), sf::seconds(0.2f));
+	atkWest.addFrame(animation, sf::IntRect(320, 128, 64, 64), sf::seconds(0.2f));
+	atkWest.addFrame(animation, sf::IntRect(256, 128, 64, 64), sf::seconds(0.2f));
+	ke::Animation& atkSouth = ke::Application::getResource<ke::Animation>(animation + "-atk-south");
+	atkSouth.addFrame(animation, sf::IntRect(0, 192, 64, 64), sf::seconds(0.2f));
+	atkSouth.addFrame(animation, sf::IntRect(256, 192, 64, 64), sf::seconds(0.2f));
+	atkSouth.addFrame(animation, sf::IntRect(320, 192, 64, 64), sf::seconds(0.2f));
+	atkSouth.addFrame(animation, sf::IntRect(256, 192, 64, 64), sf::seconds(0.2f));
+}
 
 int main(int argc, char** argv)
 {
@@ -26,117 +82,72 @@ int main(int argc, char** argv)
 		ke::Application::setAssetsPath("");
 	}
 
-	const std::string resources = "" \
-	"<?xml version=\"1.0\"?>" \
-	"<Resources>" \
-	"<Texture name=\"background\" filename=\"" + ke::Application::getAssetsPath() + "background.png\" />" \
-	"<Texture name=\"cat\" filename=\"" + ke::Application::getAssetsPath() + "cat.png\" />" \
-	"<Texture name=\"joyBackground\" filename=\"" + ke::Application::getAssetsPath() + "joyBackground.png\" />" \
-	"<Texture name=\"joyButton\" filename=\"" + ke::Application::getAssetsPath() + "joyButton.png\" />" \
-	"<Animation name=\"ninja-cat-idle\">" \
-	"<Frame textureName=\"cat\" textureRect=\"0, 0, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"64, 0, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"128, 0, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"192, 0, 64, 64\" duration=\"0.15\" />" \
-	"</Animation>" \
-	"<Animation name=\"ninja-cat-run\">" \
-	"<Frame textureName=\"cat\" textureRect=\"0, 64, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"64, 64, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"128, 64, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"192, 64, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"256, 64, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"320, 64, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"384, 64, 64, 64\" duration=\"0.15\" />" \
-	"<Frame textureName=\"cat\" textureRect=\"448, 64, 64, 64\" duration=\"0.15\" />" \
-	"</Animation>" \
-	"</Resources>";
+	// Load resources
+	{
+		// Fonts
+		ke::Application::getResource<ke::Font>("font", ke::Application::getAssetsPath() + "font.ttf");
 
-	ke::Application::loadResourcesFromMemory(resources);
+		// Textures
+		ke::Application::getResource<ke::Texture>("gui-game", ke::Application::getAssetsPath() + "gui-game.png");
+		ke::Application::getResource<ke::Texture>("hero", ke::Application::getAssetsPath() + "hero.png");
+		ke::Application::getResource<ke::Texture>("enemy-0", ke::Application::getAssetsPath() + "enemy-0.png");
+		ke::Application::getResource<ke::Texture>("soldier-0", ke::Application::getAssetsPath() + "soldier-0.png");
 		
+		// Tileset
+		ke::Tileset& tileset = ke::Application::getResource<ke::Tileset>("tileset");
+		tileset.setFirstGid(1);
+		tileset.setTileCount(50);
+		tileset.setColumns(10);
+		tileset.setImageSource(ke::Application::getAssetsPath() + "tileset.png");
+		tileset.setTileSize(sf::Vector2i(32, 32));
+		tileset.getTexture();
+
+		// Animations
+		ke::Animation& hero0Idle = ke::Application::getResource<ke::Animation>("hero-0-idle");
+		hero0Idle.addFrame("hero", sf::IntRect(0, 0, 32, 50), sf::seconds(5.f));
+		ke::Animation& hero0Cast = ke::Application::getResource<ke::Animation>("hero-0-cast");
+		hero0Cast.addFrame("hero", sf::IntRect(32, 0, 32, 50), sf::seconds(0.2f));
+		hero0Cast.addFrame("hero", sf::IntRect(64, 0, 32, 50), sf::seconds(0.2f));
+		hero0Cast.addFrame("hero", sf::IntRect(96, 0, 32, 50), sf::seconds(0.2f));
+		hero0Cast.addFrame("hero", sf::IntRect(128, 0, 32, 50), sf::seconds(0.2f));
+
+		generateAnimation("enemy-0");
+		generateAnimation("soldier-0");
+	}
+
 	ke::Window& window = ke::Application::getWindow();
 	window.create(sf::VideoMode(1024, 768), ke::Application::getName(), sf::Style::Close);
 	window.useBackgroundScaled(&ke::Application::getResource<ke::Texture>("background"));
 	window.setAction(ke::Window::Console, sf::Keyboard::Quote);
 	window.setAction(ke::Window::DebugInfo, sf::Keyboard::Quote);
 	window.setAction(ke::Window::Screenshot, sf::Keyboard::F3);
+	window.setConsoleFont(&ke::Application::getResource<ke::Font>("font"));
+	window.setDebugInfoFont(&ke::Application::getResource<ke::Font>("font"));
 
-	sf::View defaultView(sf::FloatRect(0.f, 0.f, 800.f, 600.f));
-
-	sf::Vector2f ratio;
-	ratio.x = static_cast<float>(window.getDefaultView().getSize().x) / defaultView.getSize().x;
-	ratio.y = static_cast<float>(window.getDefaultView().getSize().y) / defaultView.getSize().y;
-
-	if (ke::isWindows())
+	ke::Configuration& config = ke::Application::getResource<ke::Configuration>("gamedata");
+	if (!config.loadFromFile(ke::Application::getDataPath() + "gamedata.pure"))
 	{
-		ke::Application::getInputs().setKeyboardMapping("MoveUp", sf::Keyboard::Z, ke::InputType::Pressed);
-		ke::Application::getInputs().setKeyboardMapping("MoveLeft", sf::Keyboard::Q, ke::InputType::Hold);
-		ke::Application::getInputs().setKeyboardMapping("MoveRight", sf::Keyboard::D, ke::InputType::Hold);
-		ke::Application::getInputs().setKeyboardMapping("Light", sf::Keyboard::L, ke::InputType::Pressed);
+		config.setProperty("gameplayed", 0);
+		config.setProperty("gamewon", 0);
+		config.setProperty("gamelost", 0);
+		config.setProperty("hero-0.life", 1000);
+		config.setProperty("hero-0.cooldown", 5.f);
+		config.setProperty("enemy-0.life", 100);
+		config.setProperty("enemy-0.cooldown", 1.f);
+		config.setProperty("enemy-0.distance", 50.f);
+		config.setProperty("enemy-0.speed", 100.f);
+		config.setProperty("enemy-0.damage", 20);
+		config.setProperty("soldier-0.life", 200);
+		config.setProperty("soldier-0.cooldown", 1.f);
+		config.setProperty("soldier-0.distance", 50.f);
+		config.setProperty("soldier-0.speed", 100.f);
+		config.setProperty("soldier-0.damage", 20);
+		config.saveToFile();
 	}
 
-	ke::Joystick joystick;
-	joystick.setButtonTexture(ke::Application::getResource<ke::Texture>("joyButton"));
-	joystick.setBackgroundTexture(ke::Application::getResource<ke::Texture>("joyBackground"));
-	joystick.setPosition(sf::Vector2f(800.f, 600.f) - sf::Vector2f(joystick.getBounds().width, joystick.getBounds().height));
-	joystick.setDeltaMax(20.f);
-	joystick.blockVertical(true);
+	ke::Application::registerState<GameState>("GameState");
 
-	tgui::Gui gui(window.getHandle());
-	ke::Theme& theme = ke::Application::getResource<ke::Theme>("css", ke::Application::getAssetsPath() + "widgets.css");
-	tgui::Button::Ptr button = theme.create("Button");
-	button->setText("Jump");
-	button->setPosition(sf::Vector2f(100.f * ratio.x, 100.f * ratio.y));
-	button->setSize(sf::Vector2f(200.f * ratio.x, 200.f * ratio.y));
-	gui.add(button);
-
-	ke::Scene scene(ke::Scene::Physic);
-	scene.getPhysic()->setGravity();
-	scene.getPhysic()->setPixelsPerMeter(32.f);
-	scene.getPhysic()->setRenderDebug(true);
-	scene.getView() = defaultView;
-
-	MyActor::Ptr actor = scene.createActor<MyActor>("actor");
-	actor->setPosition(100.f, 20.f);
-
-	MyObject::Ptr ground = scene.createActor<MyObject>("ground");
-	ground->setPosition(0.f, 500.f);
-	ground->setSize(800, 600);
-
-	button->connect("pressed", [&]()
-	{
-		actor->desiredImpulseY(-240.f);
-	});
-
-	ke::Application::setEventFunction([&](const sf::Event& event)
-	{
-		if (event.type == sf::Event::TouchBegan && event.touch.finger == 2)
-		{
-			ke::Application::close();
-		}
-
-		joystick.handleEvent(event, window.getPointerPositionView(defaultView));
-		gui.handleEvent(event);
-	});
-	ke::Application::setUpdateFunction([&](sf::Time dt)
-	{
-		if (joystick.getDelta().x != 0.f)
-		{
-			actor->setVelocityX(joystick.getDelta().x * 8);
-		}
-		scene.update(dt);
-		gui.updateTime(dt);
-	});
-	ke::Application::setRenderFunction([&](sf::RenderTarget& target)
-	{
-		scene.render(target);
-		target.setView(defaultView);
-		joystick.render(target);
-		gui.draw();
-	});
-	ke::Application::runDefault();
-
-	actor = nullptr;
-	ground = nullptr;
+	ke::Application::runState("GameState");
 
 	ke::Application::quit();
 

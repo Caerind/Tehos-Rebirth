@@ -1,0 +1,17 @@
+gameplayed = 0
+hero-0.life = 1000
+enemy-0.damage = 20
+gamewon = 0
+enemy-0.cooldown = 1
+gamelost = 0
+hero-0.cooldown = 5
+enemy-0.life = 100
+enemy-0.speed = 100
+soldier-0.cooldown = 1
+enemy-0.distance = 50
+soldier-0.life = 200
+soldier-0.distance = 50
+soldier-0.speed = 100
+soldier-0.damage = 20
+terrain-0.code = eJztlLEOwCAIRE0Ng/7/B3dqYohyh1jr0IHBKD4PDmtKqf5xRFybYic/B/g6t10LWEf0l0Xan3skWH+dHz1n8a072Pqi87P9H+lE79L73vp7/YD6sGr+vHUoQb6n/9ZZxNdzzTA8PVr9/7Xsnu7o/LMake8ywR8xtC72r9lRf68XEV86eT29I/+hOTldP8q39DG+eMv/7LsYfsTfs/q/iBv3gw5X
+terrain-1.code = eJztlrESwCAIQ7l28/8/2L3XYiCRMjhk0rsX1IDDzMZRC11FivJvR891Fd9jImL4LHvlRVU/ek8760c87Kjfu9/V/mj9kWwhfjPn/8bIZFXJz74T9vyr+WoPCj7TK5j8M+9elf+vDKAeus8fBd/zoJz/FXzUB9qju/6//tAEj2QOyQ==

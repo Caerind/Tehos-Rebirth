@@ -1,5 +1,9 @@
 #include "Application.hpp"
 
+#ifdef SFML_SYSTEM_ANDROID
+#include <SFML/System/NativeActivity.hpp>
+#endif
+
 namespace ke
 {
 
@@ -184,6 +188,15 @@ TimeSystem& Application::getTime()
 InputSystem& Application::getInputs()
 {
 	return instance().mInputs;
+}
+
+std::string Application::getDataPath()
+{
+	#ifdef SFML_SYSTEM_ANDROID
+		return std::string(sf::getNativeActivity()->internalDataPath) + "/";
+	#else
+		return "";
+	#endif
 }
 
 void Application::registerMusicFile(std::string const& id, std::string const& filename)

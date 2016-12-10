@@ -1,0 +1,43 @@
+#ifndef TERRAIN_HPP
+#define TERRAIN_HPP
+
+#include "Sources/Core/Actor.hpp"
+#include "Sources/Components/LayerComponent.hpp"
+
+class Terrain : public ke::Actor
+{
+	public:
+		typedef std::shared_ptr<Terrain> Ptr;
+
+		Terrain(ke::Scene& scene, std::size_t id);
+		~Terrain();
+
+		void initializeComponents();
+
+		std::size_t getTerrainType() const;
+
+		void loadData();
+
+	private:
+		ke::LayerComponent::Ptr mLayer;
+		std::size_t mType;
+
+		class MapObject : public ke::Actor
+		{
+			public:
+				typedef std::shared_ptr<MapObject> Ptr;
+
+				MapObject(ke::Scene& scene, unsigned int gid);
+				~MapObject();
+
+				void initializeComponents();
+
+			private:
+				ke::SpriteComponent::Ptr mSprite;
+				unsigned int mTileId;
+		};
+		
+};
+
+#endif // TERRAIN_HPP
+

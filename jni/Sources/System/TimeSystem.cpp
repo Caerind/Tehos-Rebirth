@@ -39,6 +39,10 @@ void TimeSystem::update(sf::Time dt)
 				itr = mTimers.erase(itr);
 			}
 		}
+		else
+		{
+			itr++;
+		}
 	}
 }
 
