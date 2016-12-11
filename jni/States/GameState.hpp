@@ -27,18 +27,25 @@ class GameState : public ke::State
         virtual void onActivate();
         virtual void onDeactivate();
 
+		void toPostGame(std::size_t id);
+		void toSettings();
+
     private:
 		ke::Scene mScene;
 		sf::View mView;
 
-		Terrain::Ptr mTerrain;
 		Hero::Ptr mHero;
 
+		bool mLevelFinished;
 		std::size_t mEnemiesCount;
 		std::size_t mSoldiersCount;
 		int mSoldierSelected;
 		
 		std::vector<GameButton> mSoldierButtons;
+		std::vector<sf::Sprite> mSoldierSprites;
+
+		GameButton mReturnButton;
+		GameButton mSettingsButton;
 };
 
 #endif // GAMESTATE_HPP

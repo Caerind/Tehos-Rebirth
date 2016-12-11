@@ -16,7 +16,7 @@ Terrain::~Terrain()
 
 void Terrain::initializeComponents()
 {
-	mLayer = createComponent<ke::LayerComponent>(&getApplication().getResource<ke::Tileset>("tileset"), sf::Vector2i(32, 24), sf::Vector2i(32, 32));
+	mLayer = createComponent<ke::LayerComponent>(&getApplication().getResource<ke::Tileset>("tileset"), sf::Vector2i(16, 12), sf::Vector2i(64, 64));
 	attachComponent(mLayer);
 	mLayer->setZ(-100.f);
 
@@ -35,7 +35,8 @@ void Terrain::initializeComponents()
 			unsigned int gid = mLayer->getTileId(coords);
 			switch (gid)
 			{
-				case 9: getScene().createActor<Terrain::MapObject>("", 19)->setPosition(coords.x * 32.f + 16.f, coords.y * 32.f + 27.f);
+				case 11: getScene().createActor<Terrain::MapObject>("")->setPosition(coords.x * 64.f + 22.f, coords.y * 64.f + 39.f); break;
+				case 12: getScene().createActor<Terrain::MapObject>("")->setPosition(coords.x * 64.f + 42.f, coords.y * 64.f + 19.f); break;
 				default: break;
 			}
 		}
@@ -55,10 +56,9 @@ void Terrain::loadData()
 	mLayer->loadFromCode(code);
 }
 
-Terrain::MapObject::MapObject(ke::Scene& scene, unsigned int gid)
+Terrain::MapObject::MapObject(ke::Scene& scene)
 	: ke::Actor(scene)
 	, mSprite(nullptr)
-	, mTileId(gid)
 {
 }
 
@@ -70,7 +70,7 @@ void Terrain::MapObject::initializeComponents()
 {
 	mSprite = createComponent<ke::SpriteComponent>();
 	attachComponent(mSprite);
-	mSprite->setTexture(getApplication().getResource<ke::Tileset>("tileset").getTexture());
-	mSprite->setTextureRect(getApplication().getResource<ke::Tileset>("tileset").toRect(mTileId));
-	mSprite->setPosition(-16.f, -27.f);
+	mSprite->setTexture(getApplication().getResource<ke::Texture>("fx2"));
+	mSprite->setTextureRect(sf::IntRect(0,0,32,32));
+	mSprite->setPosition(-16.f, -18.f);
 }

@@ -134,35 +134,42 @@ void AI::moveTo(const sf::Vector2f& dest, sf::Time dt)
 {
 	sf::Vector2f delta = dest - getPosition();
 	sf::Vector2f mvt = ke::normalized(delta) * mSpeed * dt.asSeconds();
-	float angle = ke::getPolarAngle(mvt);
-	std::string direction = "";
-	if (angle >= 180.f && angle < 270.f)
+	if (mvt != sf::Vector2f())
 	{
-		direction = "no";
-	}
-	else if (angle >= 270.f && angle <= 360.f)
-	{
-		direction = "ne";
-	}
-	else if (angle >= 0 && angle < 90.f)
-	{
-		direction = "se";
-	}
-	else
-	{
-		direction = "so";
-	}
-	if (direction != mDirection)
-	{
-		mDirection = direction;
-		onDirectionChanged();
-	}
-	if (!collide(mvt))
-	{
-		move(mvt);
-		if (mvt != sf::Vector2f())
+		float angle = ke::getPolarAngle(mvt);
+		std::string direction = "";
+		if (angle >= 180.f && angle < 270.f)
 		{
-			startMoving();
+			direction = "no";
+		}
+		else if (angle >= 270.f && angle <= 360.f)
+		{
+			direction = "ne";
+		}
+		else if (angle >= 0 && angle < 90.f)
+		{
+			direction = "se";
+		}
+		else
+		{
+			direction = "so";
+		}
+		if (direction != mDirection)
+		{
+			mDirection = direction;
+			onDirectionChanged();
+		}
+		if (!collide(mvt))
+		{
+			move(mvt);
+			if (mvt != sf::Vector2f())
+			{
+				startMoving();
+			}
+		}
+		else
+		{
+			stopMoving();
 		}
 	}
 	else

@@ -28,14 +28,13 @@ class Terrain : public ke::Actor
 			public:
 				typedef std::shared_ptr<MapObject> Ptr;
 
-				MapObject(ke::Scene& scene, unsigned int gid);
+				MapObject(ke::Scene& scene);
 				~MapObject();
 
 				void initializeComponents();
 
 			private:
 				ke::SpriteComponent::Ptr mSprite;
-				unsigned int mTileId;
 		};
 		
 };

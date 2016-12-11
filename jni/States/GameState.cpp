@@ -6,11 +6,13 @@ GameState::GameState()
 	: ke::State()
 	, mScene()
 	, mView(sf::FloatRect(0.f, 0.f, 1024.f, 768.f))
-	, mTerrain(nullptr)
 	, mHero(nullptr)
+	, mLevelFinished(false)
 	, mEnemiesCount(0)
 	, mSoldiersCount(0)
 	, mSoldierSelected(-1)
+	, mReturnButton("gui-game")
+	, mSettingsButton("gui-game")
 {
 	getApplication().getTime().setTimer(sf::seconds(0.1f), []()
 	{
@@ -21,24 +23,32 @@ GameState::GameState()
 	mScene.getView().setSize(mView.getSize());
 	mScene.getView().setCenter(mView.getSize() * 0.5f);
 
-	// Create the terrain
-	mTerrain = mScene.createActor<Terrain>("terrain", 0);
+	// Create the terrain and hero
+	mScene.createActor<Terrain>("terrain", 0);
 	mHero = mScene.createActor<Hero>("hero", 0);
 
+	// Create some actors
 	mScene.createActor<Pop>("", 1, 0)->setPosition(50, 100);
 	mScene.createActor<Pop>("", 1, 0)->setPosition(800, 100);
 	mScene.createActor<Pop>("", 1, 0)->setPosition(400, 100);
-
 	mScene.createActor<Pop>("", 2, 0)->setPosition(700, 500);
 	mScene.createActor<Pop>("", 2, 0)->setPosition(300, 500);
 
 	// Update GUI
 	mSoldierButtons.push_back(GameButton("gui-game"));
+	mSoldierButtons.push_back(GameButton("gui-game"));
 	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 	{
 		mSoldierButtons[i].setTextureRect(sf::IntRect(0, 0, 92, 92));
 		mSoldierButtons[i].setPosition(sf::Vector2f(0.f, i * 92.f));
+
+		mSoldierSprites.push_back(sf::Sprite(getApplication().getResource<ke::Texture>("soldier-" + ke::toString(i)), sf::IntRect(0, 64, 64, 64)));
+		mSoldierSprites[i].setPosition(sf::Vector2f(14.f, i * 92.f + 14.f));
 	}
+	mReturnButton.setTextureRect(sf::IntRect(368, 0, 92, 92));
+	mReturnButton.setPosition(mScene.getView().getSize().x - 92.f, 0.f);
+	mSettingsButton.setTextureRect(sf::IntRect(460, 0, 92, 92));
+	mSettingsButton.setPosition(mScene.getView().getSize().x - 92.f, 92.f);
 }
 
 GameState::~GameState()
@@ -73,10 +83,20 @@ bool GameState::handleEvent(const sf::Event& event)
 			handled = mHero->handleGui(p);
 		}
 
-		// Map
-		if (!handled)
+		if (!handled && mReturnButton.getBounds().contains(p))
 		{
-			mScene.createActor<Pop>("", 2, 0)->setPosition(p);
+			toPostGame(0);
+		}
+
+		if (!handled && mSettingsButton.getBounds().contains(p))
+		{
+			toSettings();
+		}
+
+		// Map
+		if (!handled && mSoldierSelected != -1)
+		{
+			mScene.createActor<Pop>("", 2, mSoldierSelected)->setPosition(p);
 		}
 
 	}
@@ -114,11 +134,11 @@ bool GameState::update(sf::Time dt)
 
 	if (mHero->isDead())
 	{
-		// TODO : Lost
+		toPostGame(1);
 	}
-	if (mEnemiesCount == 0)
+	if (mEnemiesCount == 0 && mLevelFinished)
 	{
-		// TODO : Win
+		toPostGame(2);
 	}
 
 	getApplication().getWindow().setDebugInfo("HeroLife", ke::toString(mHero->getLife()));
@@ -136,9 +156,13 @@ void GameState::render(sf::RenderTarget& target, sf::RenderStates states)
 	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 	{
 		mSoldierButtons[i].render(target);
+		target.draw(mSoldierSprites[i]);
 	}
 
 	mHero->renderGui(target);
+
+	mReturnButton.render(target);
+	mSettingsButton.render(target);
 }
 
 void GameState::onActivate()
@@ -147,4 +171,28 @@ void GameState::onActivate()
 
 void GameState::onDeactivate()
 {
+}
+
+void GameState::toPostGame(std::size_t id)
+{
+	if (id == 0)
+	{
+		// TODO : Quitted
+	}
+	else if (id == 1)
+	{
+		// TODO : Lost
+	}
+	else if (id == 2)
+	{
+		// TODO : Won
+	}
+
+	clearStates();
+	pushState("PostGameState");
+}
+
+void GameState::toSettings()
+{
+	pushState("SettingsState");
 }

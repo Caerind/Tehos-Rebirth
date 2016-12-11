@@ -26,6 +26,8 @@ class Soldier : public AI
 		void onStopMoving();
 		void onStartAttack();
 
+		void moveTo(const sf::Vector2f& dest, sf::Time dt);
+
 		void updateNoTarget(sf::Time dt);
 
 	private:

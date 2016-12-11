@@ -76,18 +76,15 @@ std::size_t Hero::getHeroType() const
 bool Hero::handleGui(const sf::Vector2f& pointer)
 {
 	bool handled = false;
-	if (canCast())
+	if (mHeroSpell1.getBounds().contains(pointer))
 	{
-		if (mHeroSpell1.getBounds().contains(pointer))
-		{
-			cast(1);
-			handled = true;
-		}
-		else if (mHeroSpell2.getBounds().contains(pointer))
-		{
-			cast(2);
-			handled = true;
-		}
+		cast(1);
+		handled = true;
+	}
+	else if (mHeroSpell2.getBounds().contains(pointer))
+	{
+		cast(2);
+		handled = true;
 	}
 	return handled;
 }
@@ -120,6 +117,7 @@ void Hero::cast(std::size_t buttonIndex)
 	{
 		// Play casting animation
 		mHero->playAnimation("cast");
+		mCooldown = mCooldownMax;
 
 		// Cast 
 		// TODO : Set
@@ -133,7 +131,6 @@ void Hero::cast(std::size_t buttonIndex)
 			{
 				castSpell(mSpell2);
 			}
-			mCooldown = mCooldownMax;
 		});
 
 		// Return to idle animation

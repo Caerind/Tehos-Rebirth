@@ -38,17 +38,19 @@ int main(int argc, char** argv)
 		ke::Application::getResource<ke::Texture>("hero-0", ke::Application::getAssetsPath() + "hero-0.png");
 		ke::Application::getResource<ke::Texture>("enemy-0", ke::Application::getAssetsPath() + "enemy-0.png");
 		ke::Application::getResource<ke::Texture>("soldier-0", ke::Application::getAssetsPath() + "soldier-0.png");
+		ke::Application::getResource<ke::Texture>("soldier-1", ke::Application::getAssetsPath() + "soldier-1.png");
 		ke::Application::getResource<ke::Texture>("fx", ke::Application::getAssetsPath() + "fx.png");
+		ke::Application::getResource<ke::Texture>("fx2", ke::Application::getAssetsPath() + "fx2.png");
 		ke::Application::getResource<ke::Texture>("groundShadow", ke::Application::getAssetsPath() + "groundShadow.png");
 		
 		// Tileset
-		ke::Tileset& tileset = ke::Application::getResource<ke::Tileset>("tileset");
-		tileset.setFirstGid(1);
-		tileset.setTileCount(50);
-		tileset.setColumns(10);
-		tileset.setImageSource(ke::Application::getAssetsPath() + "tileset.png");
-		tileset.setTileSize(sf::Vector2i(32, 32));
-		tileset.getTexture();
+		ke::Tileset& tileset2 = ke::Application::getResource<ke::Tileset>("tileset");
+		tileset2.setFirstGid(1);
+		tileset2.setTileCount(20);
+		tileset2.setColumns(10);
+		tileset2.setImageSource(ke::Application::getAssetsPath() + "tileset.png");
+		tileset2.setTileSize(sf::Vector2i(64, 64));
+		tileset2.getTexture();
 
 		// Animations Hero
 		generateHeroAnimation("hero-0");
@@ -56,6 +58,7 @@ int main(int argc, char** argv)
 		// Animations AI
 		generateAIAnimation("enemy-0");
 		generateAIAnimation("soldier-0");
+		generateAIAnimation("soldier-1");
 	}
 
 	ke::Window& window = ke::Application::getWindow();
@@ -87,9 +90,14 @@ int main(int argc, char** argv)
 		config.setProperty("soldier-0.distance", 50.f);
 		config.setProperty("soldier-0.speed", 100.f);
 		config.setProperty("soldier-0.damage", 20);
-		config.setProperty("terrain-0.code", "eJztlLEOwCAIRE0Ng/7/B3dqYohyh1jr0IHBKD4PDmtKqf5xRFybYic/B/g6t10LWEf0l0Xan3skWH+dHz1n8a072Pqi87P9H+lE79L73vp7/YD6sGr+vHUoQb6n/9ZZxNdzzTA8PVr9/7Xsnu7o/LMake8ywR8xtC72r9lRf68XEV86eT29I/+hOTldP8q39DG+eMv/7LsYfsTfs/q/iBv3gw5X");
-		config.setProperty("terrain-1.code", "eJztlrESwCAIQ7l28/8/2L3XYiCRMjhk0rsX1IDDzMZRC11FivJvR891Fd9jImL4LHvlRVU/ek8760c87Kjfu9/V/mj9kWwhfjPn/8bIZFXJz74T9vyr+WoPCj7TK5j8M+9elf+vDKAeus8fBd/zoJz/FXzUB9qju/6//tAEj2QOyQ==");
-		config.saveToFile();
+		config.setProperty("soldier-1.life", 300);
+		config.setProperty("soldier-1.cooldown", 1.f);
+		config.setProperty("soldier-1.distance", 50.f);
+		config.setProperty("soldier-1.speed", 100.f);
+		config.setProperty("soldier-1.damage", 30);
+		config.setProperty("terrain-0.code", "eJxjZGBgYBwEmAkJM6PxsWF8+rFhLiL0c6Kp4cZhFisR9rMjsXlIcD82tZT6n4MM/dj8zk1APxuRbifV/aAwYSGgn1wMADVSAYo=");
+		config.setProperty("terrain-1.code", "");
+		//config.saveToFile(); // TODO : Remove when properly initialized
 	}
 
 	ke::Application::registerState<GameState>("GameState");
