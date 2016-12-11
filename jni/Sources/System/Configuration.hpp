@@ -38,22 +38,36 @@ class Configuration : public Resource
 
 	private:
 		std::string mFilename;
-		std::unordered_map<std::string, Variant> mProperties;
+		std::vector<std::pair<std::string, Variant>> mProperties;
 };
 
 template<typename T>
 inline void Configuration::setProperty(const std::string& id, const T& value)
 {
-	mProperties[id] = ke::Variant(value);
+	bool found = false;
+	for (std::size_t i = 0; i < mProperties.size(); i++)
+	{
+		if (!found && mProperties[i].first == id)
+		{
+			mProperties[i].second = Variant(value);
+			found = true;
+		}
+	}
+	if (!found)
+	{
+		mProperties.push_back(std::pair<std::string, Variant>(id, Variant(value)));
+	}
 }
 
 template<typename T>
 inline T Configuration::getPropertyAs(const std::string& id) const
 {
-	auto itr = mProperties.find(id);
-	if (itr != mProperties.end())
+	for (std::size_t i = 0; i < mProperties.size(); i++)
 	{
-		return itr->second.as<T>();
+		if (mProperties[i].first == id)
+		{
+			return mProperties[i].second.as<T>();
+		}
 	}
 	return T();
 }

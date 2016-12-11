@@ -35,12 +35,11 @@ int main(int argc, char** argv)
 
 		// Textures
 		ke::Application::getResource<ke::Texture>("gui-game", ke::Application::getAssetsPath() + "gui-game.png");
-		ke::Application::getResource<ke::Texture>("hero-0", ke::Application::getAssetsPath() + "hero-0.png");
+		ke::Application::getResource<ke::Texture>("hero", ke::Application::getAssetsPath() + "hero.png");
 		ke::Application::getResource<ke::Texture>("enemy-0", ke::Application::getAssetsPath() + "enemy-0.png");
 		ke::Application::getResource<ke::Texture>("soldier-0", ke::Application::getAssetsPath() + "soldier-0.png");
 		ke::Application::getResource<ke::Texture>("soldier-1", ke::Application::getAssetsPath() + "soldier-1.png");
 		ke::Application::getResource<ke::Texture>("fx", ke::Application::getAssetsPath() + "fx.png");
-		ke::Application::getResource<ke::Texture>("fx2", ke::Application::getAssetsPath() + "fx2.png");
 		ke::Application::getResource<ke::Texture>("groundShadow", ke::Application::getAssetsPath() + "groundShadow.png");
 		
 		// Tileset
@@ -53,7 +52,7 @@ int main(int argc, char** argv)
 		tileset2.getTexture();
 
 		// Animations Hero
-		generateHeroAnimation("hero-0");
+		generateHeroAnimation("hero");
 
 		// Animations AI
 		generateAIAnimation("enemy-0");
@@ -76,10 +75,10 @@ int main(int argc, char** argv)
 		config.setProperty("gameplayed", 0);
 		config.setProperty("gamewon", 0);
 		config.setProperty("gamelost", 0);
-		config.setProperty("hero.spell.1", 1);
-		config.setProperty("hero.spell.2", 2);
-		config.setProperty("hero-0.life", 1000);
-		config.setProperty("hero-0.cooldown", 5.f);
+		config.setProperty("hero.spell-1", 1);
+		config.setProperty("hero.spell-2", 2);
+		config.setProperty("hero.life", 1000);
+		config.setProperty("hero.cooldown", 5.f);
 		config.setProperty("enemy-0.life", 100);
 		config.setProperty("enemy-0.cooldown", 1.f);
 		config.setProperty("enemy-0.distance", 50.f);
@@ -95,7 +94,7 @@ int main(int argc, char** argv)
 		config.setProperty("soldier-1.distance", 50.f);
 		config.setProperty("soldier-1.speed", 100.f);
 		config.setProperty("soldier-1.damage", 30);
-		config.setProperty("terrain-0.code", "eJxjZGBgYBwEmAkJM6PxsWF8+rFhLiL0c6Kp4cZhFisR9rMjsXlIcD82tZT6n4MM/dj8zk1APxuRbifV/aAwYSGgn1wMADVSAYo=");
+		config.setProperty("terrain-0.code", "eJxjYmBgYBpkmJkGZnIRoYYTjc+NQx0rEWaxI7F5SHAnKWqJxRxk6MHmd1zhAcNsNHA7LExYaGQ2AMF6Ad4=");
 		config.setProperty("terrain-1.code", "");
 		//config.saveToFile(); // TODO : Remove when properly initialized
 	}
@@ -113,14 +112,18 @@ void generateHeroAnimation(const std::string& animation)
 {
 	// Idle
 	ke::Animation& idle = ke::Application::getResource<ke::Animation>(animation + "-idle");
-	idle.addFrame(animation, sf::IntRect(0, 0, 32, 50), sf::seconds(5.f));
+	idle.addFrame(animation, sf::IntRect(128, 0, 128, 128), sf::seconds(5.f));
 
 	// Cast
 	ke::Animation& cast = ke::Application::getResource<ke::Animation>(animation + "-cast");
-	cast.addFrame(animation, sf::IntRect(32, 0, 32, 50), sf::seconds(0.2f));
-	cast.addFrame(animation, sf::IntRect(64, 0, 32, 50), sf::seconds(0.2f));
-	cast.addFrame(animation, sf::IntRect(96, 0, 32, 50), sf::seconds(0.2f));
-	cast.addFrame(animation, sf::IntRect(128, 0, 32, 50), sf::seconds(0.2f));
+	cast.addFrame(animation, sf::IntRect(256, 0, 128, 128), sf::seconds(0.1f)); // 2
+	cast.addFrame(animation, sf::IntRect(384, 0, 128, 128), sf::seconds(0.1f)); // 3
+	cast.addFrame(animation, sf::IntRect(512, 0, 128, 128), sf::seconds(0.1f)); // 4
+	cast.addFrame(animation, sf::IntRect(640, 0, 128, 128), sf::seconds(0.1f)); // 5
+	cast.addFrame(animation, sf::IntRect(512, 0, 128, 128), sf::seconds(0.1f)); // 4
+	cast.addFrame(animation, sf::IntRect(384, 0, 128, 128), sf::seconds(0.1f)); // 3
+	cast.addFrame(animation, sf::IntRect(256, 0, 128, 128), sf::seconds(0.1f)); // 2
+	cast.addFrame(animation, sf::IntRect(128, 0, 128, 128), sf::seconds(0.5f)); // 1 // Be sure to not overpass
 }
 
 

@@ -23,8 +23,8 @@ void Terrain::initializeComponents()
 	mShadow = createComponent<ke::SpriteComponent>();
 	attachComponent(mShadow);
 	mShadow->setTexture("groundShadow");
-	mShadow->setTextureRect(sf::IntRect(0, 0, 1024, 768));
-	mShadow->setColor(sf::Color(150, 150, 150, 128));
+	mShadow->setTextureRect(sf::IntRect(0, 0, 512, 384));
+	mShadow->setScale(2.f, 2.f);
 
 	loadData();
 	sf::Vector2i coords;
@@ -70,7 +70,7 @@ void Terrain::MapObject::initializeComponents()
 {
 	mSprite = createComponent<ke::SpriteComponent>();
 	attachComponent(mSprite);
-	mSprite->setTexture(getApplication().getResource<ke::Texture>("fx2"));
-	mSprite->setTextureRect(sf::IntRect(0,0,32,32));
+	mSprite->setTexture(getApplication().getResource<ke::Texture>("fx"));
+	mSprite->setTextureRect(sf::IntRect(160,0,32,32));
 	mSprite->setPosition(-16.f, -18.f);
 }

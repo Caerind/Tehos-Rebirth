@@ -98,7 +98,11 @@ bool GameState::handleEvent(const sf::Event& event)
 		{
 			mScene.createActor<Pop>("", 2, mSoldierSelected)->setPosition(p);
 		}
+	}
 
+	if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right)
+	{
+		mScene.createActor<Pop>("", 1, 0)->setPosition(getApplication().getWindow().getPointerPositionView(mView));
 	}
     return true;
 }

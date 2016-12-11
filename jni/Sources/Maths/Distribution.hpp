@@ -5,6 +5,7 @@
 #include <functional>
 #include <type_traits>
 
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -66,6 +67,8 @@ Distribution<sf::Time> uniform(sf::Time min, sf::Time max);
 Distribution<sf::Vector2f> rect(const sf::Vector2f& center, const sf::Vector2f& halfSize);
 Distribution<sf::Vector2f> circle(const sf::Vector2f& center, float radius);
 Distribution<sf::Vector2f> deflect(const sf::Vector2f& direction, float maxRotation);
+Distribution<sf::Vector2f> project(const sf::Vector2f& direction, float maxRotation, float minVel, float maxVel);
+Distribution<sf::Color> colorGrade(const sf::Color& color, float min, float max);
 
 template <typename T>
 Distribution<T> uniformT(T min, T max)

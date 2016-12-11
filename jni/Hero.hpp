@@ -3,6 +3,7 @@
 
 #include "Entity.hpp"
 #include "GameButton.hpp"
+#include "GameEffect.hpp"
 
 #include "Sources/Components/AnimatorComponent.hpp"
 #include "Sources/Components/SpriteComponent.hpp"

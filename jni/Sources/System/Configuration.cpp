@@ -31,7 +31,7 @@ bool Configuration::loadFromFile(const std::string& filename)
 					std::size_t found = line.find_first_of(" = ");
 					if (found != std::string::npos)
 					{
-						mProperties[line.substr(0, found)] = line.substr(found + 3);
+						mProperties.push_back(std::pair<std::string, Variant>(line.substr(0, found), line.substr(found + 3)));
 					}
 				}
 			}
@@ -64,7 +64,7 @@ bool Configuration::loadFromMemory(const std::string& memory)
 				std::size_t found = line.find_first_of(" = ");
 				if (found != std::string::npos)
 				{
-					mProperties[line.substr(0, found)] = line.substr(found + 3);
+					mProperties.push_back(std::pair<std::string, Variant>(line.substr(0, found), line.substr(found + 3)));
 				}
 			}
 		}
@@ -87,9 +87,9 @@ bool Configuration::saveToFile(const std::string& filename)
 	std::ofstream file(filename);
 	if (file.is_open())
 	{
-		for (auto itr = mProperties.begin(); itr != mProperties.end(); itr++)
+		for (std::size_t i = 0; i < mProperties.size(); i++)
 		{
-			file << itr->first << " = " << itr->second << std::endl;
+			file << mProperties[i].first << " = " << mProperties[i].second << std::endl;
 		}
 		file.close();
 		return true;
@@ -107,10 +107,12 @@ const std::string& Configuration::getFilename()
 
 std::string Configuration::getProperty(const std::string& id) const
 {
-	auto itr = mProperties.find(id);
-	if (itr != mProperties.end())
+	for (std::size_t i = 0; i < mProperties.size(); i++)
 	{
-		return itr->second.as<std::string>();
+		if (mProperties[i].first == id)
+		{
+			return mProperties[i].second;
+		}
 	}
 	return "";
 }

@@ -16,6 +16,7 @@ class Pop : public ke::Actor
 	private:
 		ke::AnimatorComponent::Ptr mSprite;
 		ke::SpriteComponent::Ptr mFx;
+		ke::ParticleComponent::Ptr mParticles;
 		std::size_t mTeam;
 		std::size_t mType;
 		sf::Time mElapsed;
