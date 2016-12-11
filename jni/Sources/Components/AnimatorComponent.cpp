@@ -135,6 +135,16 @@ sf::FloatRect AnimatorComponent::getGlobalBounds()
 	return getWorldTransform().transformRect(mSprite.getLocalBounds());
 }
 
+void AnimatorComponent::setColor(const sf::Color& color)
+{
+	mSprite.setColor(color);
+}
+
+const sf::Color& AnimatorComponent::getColor() const
+{
+	return mSprite.getColor();
+}
+
 void AnimatorComponent::serialize(Serializer& serializer)
 {
 	SceneComponent::serialize(serializer);

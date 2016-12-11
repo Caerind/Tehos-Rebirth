@@ -1,14 +1,16 @@
 gameplayed = 0
 hero-0.life = 1000
+hero.spell.1 = 1
 enemy-0.damage = 20
 gamewon = 0
 enemy-0.cooldown = 1
+hero.spell.2 = 2
 gamelost = 0
 hero-0.cooldown = 5
 enemy-0.life = 100
-enemy-0.speed = 100
 soldier-0.cooldown = 1
 enemy-0.distance = 50
+enemy-0.speed = 100
 soldier-0.life = 200
 soldier-0.distance = 50
 soldier-0.speed = 100

@@ -169,6 +169,12 @@ void Actor::initialize()
 {
 }
 
+void Actor::updateAll(sf::Time dt)
+{
+	updateComponents(dt);
+	update(dt);
+}
+
 void Actor::update(sf::Time dt)
 {
 }

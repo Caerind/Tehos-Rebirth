@@ -1,6 +1,8 @@
 #include "Application.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
+#include <jni.h>
+#include <android/native_activity.h>
 #include <SFML/System/NativeActivity.hpp>
 #endif
 

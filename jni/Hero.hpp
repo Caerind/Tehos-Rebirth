@@ -2,6 +2,7 @@
 #define HERO_HPP
 
 #include "Entity.hpp"
+#include "GameButton.hpp"
 
 #include "Sources/Components/AnimatorComponent.hpp"
 #include "Sources/Components/SpriteComponent.hpp"
@@ -21,12 +22,18 @@ class Hero : public Entity
 
 		std::size_t getHeroType() const;
 
+		bool handleGui(const sf::Vector2f& pointer);
+		void updateGui(sf::Time dt);
+		void renderGui(sf::RenderTarget& target);
+
 		bool canCast() const;
-		void cast();
+		void cast(std::size_t buttonIndex);
 
 		float getCooldownPercent();
 
 		void loadData();
+
+		void castSpell(int spellId);
 
 	private:
 		ke::AnimatorComponent::Ptr mHero;
@@ -34,7 +41,14 @@ class Hero : public Entity
 
 		sf::Time mCooldown;
 		sf::Time mCooldownMax;
-		
+
+		int mSpell1;
+		int mSpell2;
+
+		GameButton mHeroSpell1;
+		GameButton mHeroSpell2;
+		sf::Sprite mHeroCooldown1;
+		sf::Sprite mHeroCooldown2;
 };
 
 #endif // HERO_HPP

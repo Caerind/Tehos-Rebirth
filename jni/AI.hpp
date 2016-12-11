@@ -26,6 +26,7 @@ class AI : public Entity
 		virtual void onDirectionChanged();
 		virtual void onStartMoving();
 		virtual void onStopMoving();
+		virtual void onStartAttack();
 		virtual void onAttack();
 
 	protected:
@@ -33,6 +34,7 @@ class AI : public Entity
 		float mBoxSize;
 		std::string mDirection;
 		bool mMoving;
+		std::size_t mTimerAttack;
 
 		sf::Time mAttackCooldown;
 		sf::Time mAttackCooldownMax;

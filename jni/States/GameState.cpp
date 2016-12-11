@@ -12,6 +12,11 @@ GameState::GameState()
 	, mSoldiersCount(0)
 	, mSoldierSelected(-1)
 {
+	getApplication().getTime().setTimer(sf::seconds(0.1f), []()
+	{
+		ke::Log::log("Game started");
+	});
+
 	// Update the view
 	mScene.getView().setSize(mView.getSize());
 	mScene.getView().setCenter(mView.getSize() * 0.5f);
@@ -20,28 +25,20 @@ GameState::GameState()
 	mTerrain = mScene.createActor<Terrain>("terrain", 0);
 	mHero = mScene.createActor<Hero>("hero", 0);
 
-	mScene.createActor<Enemy>("", 0)->setPosition(50, 50);
-	//mScene.createActor<Enemy>("", 0)->setPosition(800, 50);
+	mScene.createActor<Pop>("", 1, 0)->setPosition(50, 100);
+	mScene.createActor<Pop>("", 1, 0)->setPosition(800, 100);
+	mScene.createActor<Pop>("", 1, 0)->setPosition(400, 100);
 
-	mScene.createActor<Soldier>("", 0)->setPosition(700, 500);
-	mScene.createActor<Soldier>("", 0)->setPosition(300, 500);
+	mScene.createActor<Pop>("", 2, 0)->setPosition(700, 500);
+	mScene.createActor<Pop>("", 2, 0)->setPosition(300, 500);
 
 	// Update GUI
-	mSoldierButtons.push_back(GameButton());
-	mSoldierButtons.push_back(GameButton());
-	mSoldierButtons.push_back(GameButton());
-	mSoldierButtons.push_back(GameButton());
+	mSoldierButtons.push_back(GameButton("gui-game"));
 	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 	{
 		mSoldierButtons[i].setTextureRect(sf::IntRect(0, 0, 92, 92));
 		mSoldierButtons[i].setPosition(sf::Vector2f(0.f, i * 92.f));
 	}
-	mHeroButton.setTextureRect(sf::IntRect(0, 0, 92, 92));
-	mHeroButton.setPosition(mView.getSize() - sf::Vector2f(92.f, 92.f));
-	mHeroCooldown.setTexture(getApplication().getResource<ke::Texture>("gui-game"));
-	mHeroCooldown.setTextureRect(sf::IntRect(184, 0, 92, 92));
-	mHeroCooldown.setPosition(mView.getSize() - sf::Vector2f(92.f, 92.f));
-	mHeroCooldown.setColor(sf::Color(20, 20, 20, 128));
 }
 
 GameState::~GameState()
@@ -71,12 +68,16 @@ bool GameState::handleEvent(const sf::Event& event)
 		}
 
 		// Hero button
-		if (!handled && mHeroButton.getBounds().contains(p))
+		if (!handled)
 		{
-			handled = true;
-			mHero->cast();
+			handled = mHero->handleGui(p);
 		}
 
+		// Map
+		if (!handled)
+		{
+			mScene.createActor<Pop>("", 2, 0)->setPosition(p);
+		}
 
 	}
     return true;
@@ -91,8 +92,9 @@ bool GameState::update(sf::Time dt)
 		Entity::Ptr entity = mScene.getActorT<Entity>(i);
 		if (entity != nullptr)
 		{
-			if (entity->isDead())
+			if (entity->isDead() && entity->getId() != "hero")
 			{
+				entity->onDie();
 				entity->remove();
 			}
 			if (entity->getTeam() == 1)
@@ -108,9 +110,7 @@ bool GameState::update(sf::Time dt)
 
 	mScene.update(dt);
 
-	float cooldownSize = mHero->getCooldownPercent() * 0.92f;
-	mHeroCooldown.setTextureRect(sf::IntRect(184, static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
-	mHeroCooldown.setPosition(mView.getSize() - sf::Vector2f(92.f, 92.f - cooldownSize));
+	mHero->updateGui(dt);
 
 	if (mHero->isDead())
 	{
@@ -137,8 +137,8 @@ void GameState::render(sf::RenderTarget& target, sf::RenderStates states)
 	{
 		mSoldierButtons[i].render(target);
 	}
-	mHeroButton.render(target);
-	target.draw(mHeroCooldown);
+
+	mHero->renderGui(target);
 }
 
 void GameState::onActivate()
@@ -147,34 +147,4 @@ void GameState::onActivate()
 
 void GameState::onDeactivate()
 {
-}
-
-GameState::GameButton::GameButton()
-{
-	mSprite.setTexture(ke::Application::getResource<ke::Texture>("gui-game"));
-}
-
-void GameState::GameButton::setTextureRect(const sf::IntRect& rect)
-{
-	mSprite.setTextureRect(rect);
-}
-
-void GameState::GameButton::setPosition(const sf::Vector2f& pos)
-{
-	mSprite.setPosition(pos);
-}
-
-void GameState::GameButton::setPosition(float x, float y)
-{
-	mSprite.setPosition(x, y);
-}
-
-sf::FloatRect GameState::GameButton::getBounds() const
-{
-	return mSprite.getGlobalBounds();
-}
-
-void GameState::GameButton::render(sf::RenderTarget& target)
-{
-	target.draw(mSprite);
 }

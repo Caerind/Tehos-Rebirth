@@ -52,8 +52,7 @@ void Scene::update(sf::Time dt)
 		{
 			if (mActors[i]->isUpdatable())
 			{
-				mActors[i]->updateComponents(dt);
-				mActors[i]->update(dt);
+				mActors[i]->updateAll(dt);
 			}
 
 			if (usePhysic())

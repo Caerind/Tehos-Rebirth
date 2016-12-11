@@ -18,10 +18,13 @@ class Soldier : public AI
 
 		void loadData();
 
+		virtual void onDie();
+
 	private:
 		void onDirectionChanged();
 		void onStartMoving();
 		void onStopMoving();
+		void onStartAttack();
 
 		void updateNoTarget(sf::Time dt);
 

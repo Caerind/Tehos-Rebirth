@@ -5,17 +5,22 @@ AI::AI(ke::Scene& scene)
 	: Entity(scene)
 	, mTarget(nullptr)
 	, mBoxSize(8.f)
-	, mDirection("")
+	, mDirection("so")
 	, mAttackCooldown(sf::Time::Zero)
 	, mAttackCooldownMax(sf::seconds(1.f))
 	, mDistance(40.f)
 	, mSpeed(100.f)
 	, mDamage(20)
+	, mTimerAttack(0)
 {
 }
 
 AI::~AI()
 {
+	if (mTimerAttack != 0)
+	{
+		getApplication().getTime().stopTimer(mTimerAttack);
+	}
 }
 
 void AI::update(sf::Time dt)
@@ -50,9 +55,16 @@ void AI::attack()
 {
 	if (mTarget != nullptr && mTarget->isAlive() && ke::getLength(mTarget->getPosition() - getPosition()) < mDistance && mAttackCooldown <= sf::Time::Zero)
 	{
-		onAttack();
+		onStartAttack();
+		mTimerAttack = getApplication().getTime().setTimer(sf::seconds(0.5f), [this]()
+		{
+			if (mTarget != nullptr && mTarget->isAlive())
+			{
+				onAttack();
+			}
+			mTimerAttack = 0;
+		});
 		mAttackCooldown = mAttackCooldownMax;
-		// TODO : Animation
 	}
 }
 
@@ -124,21 +136,21 @@ void AI::moveTo(const sf::Vector2f& dest, sf::Time dt)
 	sf::Vector2f mvt = ke::normalized(delta) * mSpeed * dt.asSeconds();
 	float angle = ke::getPolarAngle(mvt);
 	std::string direction = "";
-	if ((angle >= 0.f && angle < 45.f) || (angle >= 315.f && angle < 360.f))
+	if (angle >= 180.f && angle < 270.f)
 	{
-		direction = "east";
+		direction = "no";
 	}
-	else if (angle >= 225.f && angle < 315.f)
+	else if (angle >= 270.f && angle <= 360.f)
 	{
-		direction = "north";
+		direction = "ne";
 	}
-	else if (angle >= 135 && angle < 225.f)
+	else if (angle >= 0 && angle < 90.f)
 	{
-		direction = "west";
+		direction = "se";
 	}
 	else
 	{
-		direction = "south";
+		direction = "so";
 	}
 	if (direction != mDirection)
 	{
@@ -189,7 +201,14 @@ void AI::onStopMoving()
 {
 }
 
+void AI::onStartAttack()
+{
+}
+
 void AI::onAttack()
 {
-	mTarget->inflige(mDamage);
+	if (mTarget != nullptr)
+	{
+		mTarget->inflige(mDamage);
+	}
 }

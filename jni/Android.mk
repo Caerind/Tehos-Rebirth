@@ -11,6 +11,9 @@ LOCAL_CPP_FEATURES += rtti
 FILE_LIST := $(wildcard $(LOCAL_PATH)/*.cpp)
 LOCAL_SRC_FILES += $(FILE_LIST:$(LOCAL_PATH)/%=%)
 
+FILE_LIST := $(wildcard $(LOCAL_PATH)/States/*.cpp)
+LOCAL_SRC_FILES += $(FILE_LIST:$(LOCAL_PATH)/%=%)
+
 FILE_LIST := $(wildcard $(LOCAL_PATH)/Sources/Components/*.cpp)
 LOCAL_SRC_FILES += $(FILE_LIST:$(LOCAL_PATH)/%=%)
 FILE_LIST := $(wildcard $(LOCAL_PATH)/Sources/Core/*.cpp)

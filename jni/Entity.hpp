@@ -11,6 +11,10 @@ class Entity : public ke::Actor
 		Entity(ke::Scene& scene);
 		virtual ~Entity();
 
+		void initializeComponents();
+
+		void updateAll(sf::Time dt);
+
 		virtual void serialize(ke::Serializer& serializer);
 		virtual bool deserialize(ke::Serializer& serializer);
 
@@ -27,9 +31,17 @@ class Entity : public ke::Actor
 
 		virtual std::size_t getTeam() const;
 
+		virtual void onDie();
+
+		virtual void slow(float factor, sf::Time slowDuration);
+
 	protected:
+		ke::SpriteComponent::Ptr mShadow;
 		int mLife;
 		int mLifeMax;
+
+		std::size_t mTimerSlow;
+		float mTimeFactor;
 };
 
 #endif // ENTITY_HPP

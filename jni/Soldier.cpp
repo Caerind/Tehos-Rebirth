@@ -1,4 +1,6 @@
 #include "Soldier.hpp"
+#include "Sources/Core/Scene.hpp"
+#include "Dead.hpp"
 
 Soldier::Soldier(ke::Scene& scene, std::size_t soldierType)
 	: AI(scene)
@@ -15,22 +17,25 @@ Soldier::~Soldier()
 
 void Soldier::initializeComponents()
 {
+	Entity::initializeComponents();
+
+	std::string type = "soldier-" + ke::toString(mSoldierType);
 	mSprite = createComponent<ke::AnimatorComponent>();
 	attachComponent(mSprite);
 	mSprite->setPosition(sf::Vector2f(-32.f, -54.f));
-	mSprite->addAnimation("idle-east", "soldier-" + ke::toString(mSoldierType) + "-idle-east");
-	mSprite->addAnimation("idle-north", "soldier-" + ke::toString(mSoldierType) + "-idle-north");
-	mSprite->addAnimation("idle-west", "soldier-" + ke::toString(mSoldierType) + "-idle-west");
-	mSprite->addAnimation("idle-south", "soldier-" + ke::toString(mSoldierType) + "-idle-south");
-	mSprite->addAnimation("walk-east", "soldier-" + ke::toString(mSoldierType) + "-walk-east");
-	mSprite->addAnimation("walk-north", "soldier-" + ke::toString(mSoldierType) + "-walk-north");
-	mSprite->addAnimation("walk-west", "soldier-" + ke::toString(mSoldierType) + "-walk-west");
-	mSprite->addAnimation("walk-south", "soldier-" + ke::toString(mSoldierType) + "-walk-south");
-	mSprite->addAnimation("atk-east", "soldier-" + ke::toString(mSoldierType) + "-atk-east");
-	mSprite->addAnimation("atk-north", "soldier-" + ke::toString(mSoldierType) + "-atk-north");
-	mSprite->addAnimation("atk-west", "soldier-" + ke::toString(mSoldierType) + "-atk-west");
-	mSprite->addAnimation("atk-south", "soldier-" + ke::toString(mSoldierType) + "-atk-south");
-	mSprite->playAnimation("idle-south");
+	mSprite->addAnimation("idle-so", type + "-idle-so");
+	mSprite->addAnimation("idle-se", type + "-idle-se");
+	mSprite->addAnimation("idle-ne", type + "-idle-ne");
+	mSprite->addAnimation("idle-no", type + "-idle-no");
+	mSprite->addAnimation("walk-so", type + "-walk-so");
+	mSprite->addAnimation("walk-se", type + "-walk-se");
+	mSprite->addAnimation("walk-ne", type + "-walk-ne");
+	mSprite->addAnimation("walk-no", type + "-walk-no");
+	mSprite->addAnimation("atk-so", type + "-atk-so");
+	mSprite->addAnimation("atk-se", type + "-atk-se");
+	mSprite->addAnimation("atk-ne", type + "-atk-ne");
+	mSprite->addAnimation("atk-no", type + "-atk-no");
+	mSprite->playAnimation("idle-so");
 }
 
 std::size_t Soldier::getTeam() const
@@ -55,6 +60,11 @@ void Soldier::loadData()
 	mSpeed = config.getPropertyAs<float>(type + ".speed");
 }
 
+void Soldier::onDie()
+{
+	getScene().createActor<Dead>("", getTeam(), getSoldierType())->setPosition(getPosition());
+}
+
 void Soldier::onDirectionChanged()
 {
 	mSprite->playAnimation("walk-" + mDirection);
@@ -68,6 +78,11 @@ void Soldier::onStartMoving()
 void Soldier::onStopMoving()
 {
 	mSprite->playAnimation("idle-" + mDirection);
+}
+
+void Soldier::onStartAttack()
+{
+	mSprite->playAnimation("atk-" + mDirection);
 }
 
 void Soldier::updateNoTarget(sf::Time dt)

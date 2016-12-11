@@ -67,6 +67,7 @@ class Actor : public Serializable
 		virtual void initialize();
 
 		// Update & render
+		virtual void updateAll(sf::Time dt);
 		virtual void update(sf::Time dt);
 		void updateComponents(sf::Time dt);
 		virtual void render(sf::RenderTarget& target);

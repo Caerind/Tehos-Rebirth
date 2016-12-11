@@ -8,29 +8,13 @@
 #include "../Hero.hpp"
 #include "../Enemy.hpp"
 #include "../Soldier.hpp"
+#include "../Pop.hpp"
+#include "../GameButton.hpp"
 
 class GameState : public ke::State
 {
     public:
         typedef std::shared_ptr<GameState> Ptr;
-
-		class GameButton
-		{
-			public:
-				GameButton();
-
-				void setTextureRect(const sf::IntRect& rect);
-
-				void setPosition(const sf::Vector2f& pos);
-				void setPosition(float x, float y);
-
-				sf::FloatRect getBounds() const;
-
-				void render(sf::RenderTarget& target);
-
-			private:
-				sf::Sprite mSprite;
-		};
 
     public:
         GameState();
@@ -55,8 +39,6 @@ class GameState : public ke::State
 		int mSoldierSelected;
 		
 		std::vector<GameButton> mSoldierButtons;
-		GameButton mHeroButton;
-		sf::Sprite mHeroCooldown;
 };
 
 #endif // GAMESTATE_HPP

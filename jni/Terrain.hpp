@@ -20,6 +20,7 @@ class Terrain : public ke::Actor
 
 	private:
 		ke::LayerComponent::Ptr mLayer;
+		ke::SpriteComponent::Ptr mShadow;
 		std::size_t mType;
 
 		class MapObject : public ke::Actor

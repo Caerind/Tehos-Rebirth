@@ -4,6 +4,7 @@
 Terrain::Terrain(ke::Scene& scene, std::size_t type)
 	: ke::Actor(scene)
 	, mLayer(nullptr)
+	, mShadow(nullptr)
 	, mType(type)
 {
 	setZ(-100.f);
@@ -16,6 +17,15 @@ Terrain::~Terrain()
 void Terrain::initializeComponents()
 {
 	mLayer = createComponent<ke::LayerComponent>(&getApplication().getResource<ke::Tileset>("tileset"), sf::Vector2i(32, 24), sf::Vector2i(32, 32));
+	attachComponent(mLayer);
+	mLayer->setZ(-100.f);
+
+	mShadow = createComponent<ke::SpriteComponent>();
+	attachComponent(mShadow);
+	mShadow->setTexture("groundShadow");
+	mShadow->setTextureRect(sf::IntRect(0, 0, 1024, 768));
+	mShadow->setColor(sf::Color(150, 150, 150, 128));
+
 	loadData();
 	sf::Vector2i coords;
 	for (coords.y = 0; coords.y < mLayer->getSize().y; coords.y++)
@@ -30,8 +40,6 @@ void Terrain::initializeComponents()
 			}
 		}
 	}
-
-	attachComponent(mLayer);
 }
 
 std::size_t Terrain::getTerrainType() const

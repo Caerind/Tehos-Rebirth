@@ -1,4 +1,6 @@
 #include "Enemy.hpp"
+#include "Sources/Core/Scene.hpp"
+#include "Dead.hpp"
 
 Enemy::Enemy(ke::Scene& scene, std::size_t enemyType)
 	: AI(scene)
@@ -14,23 +16,25 @@ Enemy::~Enemy()
 
 void Enemy::initializeComponents()
 {
+	Entity::initializeComponents();
+
 	std::string type = "enemy-" + ke::toString(mEnemyType);
 	mSprite = createComponent<ke::AnimatorComponent>();
 	attachComponent(mSprite);
 	mSprite->setPosition(sf::Vector2f(-32.f, -54.f));
-	mSprite->addAnimation("idle-east", type + "-idle-east");
-	mSprite->addAnimation("idle-north", type + "-idle-north");
-	mSprite->addAnimation("idle-west", type + "-idle-west");
-	mSprite->addAnimation("idle-south", type + "-idle-south");
-	mSprite->addAnimation("walk-east", type + "-walk-east");
-	mSprite->addAnimation("walk-north", type + "-walk-north");
-	mSprite->addAnimation("walk-west", type + "-walk-west");
-	mSprite->addAnimation("walk-south", type + "-walk-south");
-	mSprite->addAnimation("atk-east", type + "-atk-east");
-	mSprite->addAnimation("atk-north", type + "-atk-north");
-	mSprite->addAnimation("atk-west", type + "-atk-west");
-	mSprite->addAnimation("atk-south", type + "-atk-south");
-	mSprite->playAnimation("idle-south");
+	mSprite->addAnimation("idle-so", type + "-idle-so");
+	mSprite->addAnimation("idle-se", type + "-idle-se");
+	mSprite->addAnimation("idle-ne", type + "-idle-ne");
+	mSprite->addAnimation("idle-no", type + "-idle-no");
+	mSprite->addAnimation("walk-so", type + "-walk-so");
+	mSprite->addAnimation("walk-se", type + "-walk-se");
+	mSprite->addAnimation("walk-ne", type + "-walk-ne");
+	mSprite->addAnimation("walk-no", type + "-walk-no");
+	mSprite->addAnimation("atk-so", type + "-atk-so");
+	mSprite->addAnimation("atk-se", type + "-atk-se");
+	mSprite->addAnimation("atk-ne", type + "-atk-ne");
+	mSprite->addAnimation("atk-no", type + "-atk-no");
+	mSprite->playAnimation("idle-so");
 }
 
 std::size_t Enemy::getTeam() const
@@ -55,6 +59,11 @@ void Enemy::loadData()
 	mSpeed = config.getPropertyAs<float>(type + ".speed");
 }
 
+void Enemy::onDie()
+{
+	getScene().createActor<Dead>("", getTeam(), getEnemyType())->setPosition(getPosition());
+}
+
 void Enemy::onDirectionChanged()
 {
 	mSprite->playAnimation("walk-" + mDirection);
@@ -68,4 +77,9 @@ void Enemy::onStartMoving()
 void Enemy::onStopMoving()
 {
 	mSprite->playAnimation("ilde-" + mDirection);
+}
+
+void Enemy::onStartAttack()
+{
+	mSprite->playAnimation("atk-" + mDirection);
 }
