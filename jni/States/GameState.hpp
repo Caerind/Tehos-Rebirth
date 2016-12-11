@@ -10,6 +10,7 @@
 #include "../Soldier.hpp"
 #include "../Pop.hpp"
 #include "../GameButton.hpp"
+#include "../AIPlayer.hpp"
 
 class GameState : public ke::State
 {
@@ -30,22 +31,39 @@ class GameState : public ke::State
 		void toPostGame(std::size_t id);
 		void toSettings();
 
+		static int Level;
+		static bool FirstGame;
+		static sf::FloatRect Bounds;
+
     private:
 		ke::Scene mScene;
 		sf::View mView;
 
+		AIPlayer mAI;
+
+		ke::Configuration& mConfig;
+
 		Hero::Ptr mHero;
 
-		bool mLevelFinished;
+		int mLevel;
 		std::size_t mEnemiesCount;
 		std::size_t mSoldiersCount;
 		int mSoldierSelected;
+		int mMoney;
+		sf::Time mMoneyTime;
 		
 		std::vector<GameButton> mSoldierButtons;
 		std::vector<sf::Sprite> mSoldierSprites;
+		std::vector<int> mSoldierPrices;
+
+		GameButton mMoneyButton;
+		sf::Sprite mMoneySprite;
+		sf::Text mMoneyText;
 
 		GameButton mReturnButton;
 		GameButton mSettingsButton;
+
+		sf::Text mLevelText;
 };
 
 #endif // GAMESTATE_HPP

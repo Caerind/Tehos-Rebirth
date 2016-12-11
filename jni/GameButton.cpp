@@ -20,6 +20,21 @@ void GameButton::setPosition(float x, float y)
 	mSprite.setPosition(x, y);
 }
 
+void GameButton::setColor(const sf::Color& color)
+{
+	mSprite.setColor(color);
+}
+
+void GameButton::setScale(const sf::Vector2f& scale)
+{
+	mSprite.setScale(scale);
+}
+
+void GameButton::setScale(float x, float y)
+{
+	mSprite.setScale(x, y);
+}
+
 sf::FloatRect GameButton::getBounds() const
 {
 	return mSprite.getGlobalBounds();

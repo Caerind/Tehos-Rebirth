@@ -4,6 +4,7 @@
 #include "Entity.hpp"
 #include "GameButton.hpp"
 #include "GameEffect.hpp"
+#include "Lifebar.hpp"
 
 #include "Sources/Components/AnimatorComponent.hpp"
 #include "Sources/Components/SpriteComponent.hpp"
@@ -36,6 +37,8 @@ class Hero : public Entity
 
 		void castSpell(int spellId);
 
+		void render(sf::RenderTarget& target);
+
 	private:
 		ke::AnimatorComponent::Ptr mHero;
 		std::size_t mHeroType;
@@ -50,6 +53,8 @@ class Hero : public Entity
 		GameButton mHeroSpell2;
 		sf::Sprite mHeroCooldown1;
 		sf::Sprite mHeroCooldown2;
+
+		Lifebar mLifeBar;
 };
 
 #endif // HERO_HPP

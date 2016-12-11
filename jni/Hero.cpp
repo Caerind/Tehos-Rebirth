@@ -1,6 +1,7 @@
 #include "Hero.hpp"
 #include "Sources/System/Application.hpp"
 #include "Sources/Core/Scene.hpp"
+#include "States/GameState.hpp"
 
 Hero::Hero(ke::Scene& scene, std::size_t heroType)
 	: Entity(scene)
@@ -12,7 +13,7 @@ Hero::Hero(ke::Scene& scene, std::size_t heroType)
 	, mHeroSpell2("gui-game")
 {
 	// TODO : Allow modification
-	setPosition(sf::Vector2f(getScene().getView().getCenter().x, getScene().getView().getSize().y - 60.f));
+	setPosition(sf::Vector2f(getScene().getView().getCenter().x, getScene().getView().getSize().y - 80.f));
 
 	loadData();
 
@@ -21,13 +22,16 @@ Hero::Hero(ke::Scene& scene, std::size_t heroType)
 	mHeroSpell2.setTextureRect(sf::IntRect(460 + (mSpell2 * 92), 0, 92, 92));
 	mHeroSpell2.setPosition(getScene().getView().getSize() - sf::Vector2f(92.f, 92.f));
 	mHeroCooldown1.setTexture(getApplication().getResource<ke::Texture>("gui-game"));
-	mHeroCooldown1.setTextureRect(sf::IntRect(184, 0, 92, 92));
+	mHeroCooldown1.setTextureRect(sf::IntRect(460 + (mSpell1 * 92), 92, 92, 92));
 	mHeroCooldown1.setPosition(getScene().getView().getSize() - sf::Vector2f(184.f, 92.f));
 	mHeroCooldown1.setColor(sf::Color(20, 20, 20, 128));
 	mHeroCooldown2.setTexture(getApplication().getResource<ke::Texture>("gui-game"));
-	mHeroCooldown2.setTextureRect(sf::IntRect(184, 0, 92, 92));
+	mHeroCooldown2.setTextureRect(sf::IntRect(460 + (mSpell2 * 92), 92, 92, 92));
 	mHeroCooldown2.setPosition(getScene().getView().getSize() - sf::Vector2f(92.f, 92.f));
 	mHeroCooldown2.setColor(sf::Color(20, 20, 20, 128));
+
+	mLifeBar.setPosition(sf::Vector2f(getScene().getView().getSize().x * 0.5f - 300.f, getScene().getView().getSize().y - 80.f));
+	mLifeBar.setScale(sf::Vector2f(2.f, 2.f));
 }
 
 Hero::~Hero()
@@ -91,10 +95,11 @@ bool Hero::handleGui(const sf::Vector2f& pointer)
 void Hero::updateGui(sf::Time dt)
 {
 	float cooldownSize = getCooldownPercent() * 0.92f;
-	mHeroCooldown1.setTextureRect(sf::IntRect(184, static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
+	mHeroCooldown1.setTextureRect(sf::IntRect(460 + (mSpell1 * 92), 92 + static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
 	mHeroCooldown1.setPosition(getScene().getView().getSize() - sf::Vector2f(184.f, 92.f - cooldownSize));
-	mHeroCooldown2.setTextureRect(sf::IntRect(184, static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
+	mHeroCooldown2.setTextureRect(sf::IntRect(460 + (mSpell2 * 92), 92 + static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
 	mHeroCooldown2.setPosition(getScene().getView().getSize() - sf::Vector2f(92.f, 92.f - cooldownSize));
+	mLifeBar.setPercent(getLifePercent());
 }
 
 void Hero::renderGui(sf::RenderTarget& target)
@@ -103,6 +108,7 @@ void Hero::renderGui(sf::RenderTarget& target)
 	mHeroSpell2.render(target);
 	target.draw(mHeroCooldown1);
 	target.draw(mHeroCooldown2);
+	mLifeBar.render(target);
 }
 
 bool Hero::canCast() const
@@ -176,7 +182,7 @@ void Hero::castSpell(int spellId)
 			}
 		}
 	}
-	else if (spellId == 2)
+	else if (spellId == 2) // Damage
 	{
 		for (std::size_t i = 0; i < scene.getActorCount(); i++)
 		{
@@ -188,7 +194,7 @@ void Hero::castSpell(int spellId)
 			}
 		}
 	}
-	else if (spellId == 3)
+	else if (spellId == 3) // Slow
 	{
 		for (std::size_t i = 0; i < scene.getActorCount(); i++)
 		{
@@ -199,7 +205,7 @@ void Hero::castSpell(int spellId)
 			}
 		}
 	}
-	else if (spellId == 4)
+	else if (spellId == 4) // Shock
 	{
 		for (std::size_t i = 0; i < scene.getActorCount(); i++)
 		{
@@ -214,8 +220,15 @@ void Hero::castSpell(int spellId)
 					effect->setRotation(ke::getPolarAngle(mvt) + 90.f);
 				}
 				entity->move(mvt);
-				// TODO : Out bound -> kill
+				if (!GameState::Bounds.contains(entity->getPosition()))
+				{
+					entity->inflige(100000); // Kill
+				}
 			}
 		}
 	}
+}
+
+void Hero::render(sf::RenderTarget& target)
+{
 }

@@ -42,6 +42,14 @@ Distribution<sf::Vector2f> rect(const sf::Vector2f& center, const sf::Vector2f& 
     });
 }
 
+Distribution<sf::Vector2f> rect(const sf::FloatRect& rect)
+{
+	return Distribution<sf::Vector2f>([=]() -> sf::Vector2f
+	{
+		return sf::Vector2f(rect.left + random(0.f, rect.width), rect.top + random(0.f, rect.height));
+	});
+}
+
 Distribution<sf::Vector2f> circle(const sf::Vector2f& center, float radius)
 {
     return Distribution<sf::Vector2f>([=] () -> sf::Vector2f

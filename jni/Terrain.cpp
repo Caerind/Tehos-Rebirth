@@ -26,7 +26,9 @@ void Terrain::initializeComponents()
 	mShadow->setTextureRect(sf::IntRect(0, 0, 512, 384));
 	mShadow->setScale(2.f, 2.f);
 
-	loadData();
+	// TODO : Generate
+	mLayer->loadFromCode("eJxjYmBgYBpkmJkGZnIRoYYTjc+NQx0rEWaxI7F5SHAnKWqJxRxk6MHmd1zhAcNsNHA7LExYaGQ2AMF6Ad4=");
+
 	sf::Vector2i coords;
 	for (coords.y = 0; coords.y < mLayer->getSize().y; coords.y++)
 	{
@@ -46,14 +48,6 @@ void Terrain::initializeComponents()
 std::size_t Terrain::getTerrainType() const
 {
 	return mType;
-}
-
-void Terrain::loadData()
-{
-	std::string type = "terrain-" + ke::toString(mType);
-	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
-	std::string code = config.getProperty(type + ".code");
-	mLayer->loadFromCode(code);
 }
 
 Terrain::MapObject::MapObject(ke::Scene& scene)

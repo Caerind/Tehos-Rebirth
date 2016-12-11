@@ -18,7 +18,9 @@ class Soldier : public AI
 
 		void loadData();
 
-		virtual void onDie();
+		virtual void onDie(int gain = 0);
+
+		sf::Vector2f getPath();
 
 	private:
 		void onDirectionChanged();

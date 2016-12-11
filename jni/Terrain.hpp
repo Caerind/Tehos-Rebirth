@@ -16,8 +16,6 @@ class Terrain : public ke::Actor
 
 		std::size_t getTerrainType() const;
 
-		void loadData();
-
 	private:
 		ke::LayerComponent::Ptr mLayer;
 		ke::SpriteComponent::Ptr mShadow;

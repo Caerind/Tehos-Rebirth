@@ -18,7 +18,9 @@ class Enemy : public AI
 
 		void loadData();
 
-		virtual void onDie();
+		void render(sf::RenderTarget& target);
+
+		virtual void onDie(int gain = 0);
 
 	private:
 		void onDirectionChanged();

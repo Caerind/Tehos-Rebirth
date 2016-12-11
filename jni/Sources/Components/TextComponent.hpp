@@ -35,6 +35,9 @@ class TextComponent : public SceneComponent
 		sf::Color getOutlineColor() const;
 		float getOutlineThickness() const;
 
+		float getWidth() const;
+		float getHeight() const;
+
 		virtual void serialize(Serializer& serializer);
 		virtual bool deserialize(Serializer& serializer);
 

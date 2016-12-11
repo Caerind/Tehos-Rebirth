@@ -21,7 +21,11 @@ void Enemy::initializeComponents()
 	std::string type = "enemy-" + ke::toString(mEnemyType);
 	mSprite = createComponent<ke::AnimatorComponent>();
 	attachComponent(mSprite);
-	mSprite->setPosition(sf::Vector2f(-32.f, -54.f));
+	switch (mEnemyType)
+	{
+		case 0: mSprite->setPosition(sf::Vector2f(-32.f, -54.f)); break;
+		case 1: mSprite->setPosition(sf::Vector2f(-64.f, -108.f)); break;
+	}
 	mSprite->addAnimation("idle-so", type + "-idle-so");
 	mSprite->addAnimation("idle-se", type + "-idle-se");
 	mSprite->addAnimation("idle-ne", type + "-idle-ne");
@@ -59,9 +63,32 @@ void Enemy::loadData()
 	mSpeed = config.getPropertyAs<float>(type + ".speed");
 }
 
-void Enemy::onDie()
+void Enemy::render(sf::RenderTarget& target)
 {
-	getScene().createActor<Dead>("", getTeam(), getEnemyType())->setPosition(getPosition());
+	#ifdef _DEBUG
+	sf::FloatRect bounds = getBounds();
+	sf::RectangleShape shape;
+	shape.setSize(sf::Vector2f(bounds.width, bounds.height));
+	shape.setPosition(bounds.left, bounds.top);
+	shape.setFillColor(sf::Color::Transparent);
+	shape.setOutlineThickness(1.f);
+	shape.setOutlineColor(sf::Color::Red);
+	target.draw(shape);
+	#endif
+	if (mEnemyType == 1)
+	{
+		mLifeBar.setPosition(getPosition() + sf::Vector2f(-37.5f, -130.f));
+	}
+	else
+	{
+		mLifeBar.setPosition(getPosition() + sf::Vector2f(-37.5f, -65.f));
+	}
+	mLifeBar.render(target);
+}
+
+void Enemy::onDie(int gain)
+{
+	getScene().createActor<Dead>("", getTeam(), getEnemyType(), gain)->setPosition(getPosition());
 }
 
 void Enemy::onDirectionChanged()

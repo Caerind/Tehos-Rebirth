@@ -29,7 +29,15 @@ void Pop::initializeComponents()
 		default: break;
 	}
 	attachComponent(mSprite);
-	mSprite->setPosition(sf::Vector2f(-32.f, -54.f));
+
+	if (mTeam == 1 && (mType == 1 || mType == 1))
+	{
+		mSprite->setPosition(sf::Vector2f(-64.f, -108.f));
+	}
+	else
+	{
+		mSprite->setPosition(sf::Vector2f(-32.f, -54.f));
+	}
 	mSprite->addAnimation("pop", type + "-pop");
 	mSprite->playAnimation("pop");
 

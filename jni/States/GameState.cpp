@@ -2,17 +2,24 @@
 #include "../Sources/System/Application.hpp"
 #include "../Sources/Core/Scene.hpp"
 
+int GameState::Level = 0;
+bool GameState::FirstGame = false;
+sf::FloatRect GameState::Bounds = sf::FloatRect(96, 64, 832, 672);
+
 GameState::GameState()
 	: ke::State()
 	, mScene()
 	, mView(sf::FloatRect(0.f, 0.f, 1024.f, 768.f))
+	, mAI(mScene, GameState::Level)
+	, mConfig(getApplication().getResource<ke::Configuration>("gamedata"))
 	, mHero(nullptr)
-	, mLevelFinished(false)
-	, mEnemiesCount(0)
-	, mSoldiersCount(0)
+	, mLevel(GameState::Level)
 	, mSoldierSelected(-1)
+	, mMoney(300)
+	, mMoneyTime(sf::Time::Zero)
 	, mReturnButton("gui-game")
 	, mSettingsButton("gui-game")
+	, mMoneyButton("gui-game")
 {
 	getApplication().getTime().setTimer(sf::seconds(0.1f), []()
 	{
@@ -27,13 +34,6 @@ GameState::GameState()
 	mScene.createActor<Terrain>("terrain", 0);
 	mHero = mScene.createActor<Hero>("hero", 0);
 
-	// Create some actors
-	mScene.createActor<Pop>("", 1, 0)->setPosition(50, 100);
-	mScene.createActor<Pop>("", 1, 0)->setPosition(800, 100);
-	mScene.createActor<Pop>("", 1, 0)->setPosition(400, 100);
-	mScene.createActor<Pop>("", 2, 0)->setPosition(700, 500);
-	mScene.createActor<Pop>("", 2, 0)->setPosition(300, 500);
-
 	// Update GUI
 	mSoldierButtons.push_back(GameButton("gui-game"));
 	mSoldierButtons.push_back(GameButton("gui-game"));
@@ -44,11 +44,42 @@ GameState::GameState()
 
 		mSoldierSprites.push_back(sf::Sprite(getApplication().getResource<ke::Texture>("soldier-" + ke::toString(i)), sf::IntRect(0, 64, 64, 64)));
 		mSoldierSprites[i].setPosition(sf::Vector2f(14.f, i * 92.f + 14.f));
+
+		mSoldierPrices.push_back(mConfig.getPropertyAs<int>("soldier-" + ke::toString(i) + ".price"));
 	}
 	mReturnButton.setTextureRect(sf::IntRect(368, 0, 92, 92));
 	mReturnButton.setPosition(mScene.getView().getSize().x - 92.f, 0.f);
 	mSettingsButton.setTextureRect(sf::IntRect(460, 0, 92, 92));
 	mSettingsButton.setPosition(mScene.getView().getSize().x - 92.f, 92.f);
+	mMoneyButton.setTextureRect(sf::IntRect(0, 0, 92, 92));
+	mMoneyButton.setPosition(0.f, mScene.getView().getSize().y - 92.f);
+	mMoneyButton.setScale(2.f, 1.f);
+	mMoneySprite.setTexture(getApplication().getResource<ke::Texture>("fx"));
+	mMoneySprite.setTextureRect(sf::IntRect(192, 0, 32, 32));
+	mMoneySprite.setOrigin(sf::Vector2f(16.f, 16.f));
+	mMoneySprite.setPosition(184.f - 46.f, mScene.getView().getSize().y - 46.f);
+	mMoneyText.setFont(getApplication().getResource<ke::Font>("font"));
+	mMoneyText.setString(ke::toString(mMoney));
+	mMoneyText.setCharacterSize(20);
+	mMoneyText.setFillColor(sf::Color::White);
+	mMoneyText.setOutlineThickness(2.f);
+	mMoneyText.setOutlineColor(sf::Color::Black);
+	mMoneyText.setOrigin(0.f, mMoneyText.getGlobalBounds().height * 0.5f);
+	mMoneyText.setPosition(50.f, mScene.getView().getSize().y - 46.f - 4);
+	mLevelText.setFont(getApplication().getResource<ke::Font>("font"));
+	mLevelText.setString("Level " + ke::toString(mLevel));
+	mLevelText.setCharacterSize(40);
+	mLevelText.setFillColor(sf::Color::White);
+	mLevelText.setOutlineThickness(2.5f);
+	mLevelText.setOutlineColor(sf::Color::Black);
+	mLevelText.setOrigin(mLevelText.getGlobalBounds().width * 0.5f, 0.f);
+	mLevelText.setPosition(mScene.getView().getSize().x * 0.5f, 10.f);
+
+	// TEMP CHEAT
+	getApplication().getWindow().setConsoleCommand("moneyadd", [this](const ke::Window::CommandArgs& args)
+	{
+		mMoney += 500;
+	});
 }
 
 GameState::~GameState()
@@ -86,17 +117,20 @@ bool GameState::handleEvent(const sf::Event& event)
 		if (!handled && mReturnButton.getBounds().contains(p))
 		{
 			toPostGame(0);
+			handled = true;
 		}
-
 		if (!handled && mSettingsButton.getBounds().contains(p))
 		{
 			toSettings();
+			handled = true;
 		}
 
 		// Map
-		if (!handled && mSoldierSelected != -1)
+		if (!handled && GameState::Bounds.contains(p) && mSoldierSelected > -1 && mMoney >= mSoldierPrices[mSoldierSelected])
 		{
+			mMoney -= mSoldierPrices[mSoldierSelected];
 			mScene.createActor<Pop>("", 2, mSoldierSelected)->setPosition(p);
+			handled = true;
 		}
 	}
 
@@ -104,13 +138,15 @@ bool GameState::handleEvent(const sf::Event& event)
 	{
 		mScene.createActor<Pop>("", 1, 0)->setPosition(getApplication().getWindow().getPointerPositionView(mView));
 	}
+	if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle)
+	{
+		mScene.createActor<Pop>("", 1, 1)->setPosition(getApplication().getWindow().getPointerPositionView(mView));
+	}
     return true;
 }
 
 bool GameState::update(sf::Time dt)
 {
-	mEnemiesCount = 0;
-	mSoldiersCount = 0;
 	for (std::size_t i = 0; i < mScene.getActorCount(); i++)
 	{
 		Entity::Ptr entity = mScene.getActorT<Entity>(i);
@@ -118,19 +154,28 @@ bool GameState::update(sf::Time dt)
 		{
 			if (entity->isDead() && entity->getId() != "hero")
 			{
-				entity->onDie();
+				int gain = 50 + ke::random(-10, +10); // TODO : Set
+				if (entity->getTeam() == 1)
+				{
+					mMoney += gain;
+					mAI.enemyDied();
+				}
+				entity->onDie(gain);
 				entity->remove();
-			}
-			if (entity->getTeam() == 1)
-			{
-				mEnemiesCount++;
-			}
-			if (entity->getTeam() == 2)
-			{
-				mSoldiersCount++;
 			}
 		}
 	}
+
+	mMoneyTime += dt;
+	if (mMoneyTime >= sf::seconds(1.f))
+	{
+		mMoneyTime = sf::Time::Zero;
+		mMoney++;
+	}
+
+	mMoneyText.setString(ke::toString(mMoney));
+
+	mAI.update(dt);
 
 	mScene.update(dt);
 
@@ -140,7 +185,7 @@ bool GameState::update(sf::Time dt)
 	{
 		toPostGame(1);
 	}
-	if (mEnemiesCount == 0 && mLevelFinished)
+	if (mAI.hasLost())
 	{
 		toPostGame(2);
 	}
@@ -159,14 +204,28 @@ void GameState::render(sf::RenderTarget& target, sf::RenderStates states)
 	target.setView(mView);
 	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 	{
+		if (mMoney >= mSoldierPrices[i])
+		{
+			mSoldierButtons[i].setColor(sf::Color::White);
+		}
+		else
+		{
+			mSoldierButtons[i].setColor(sf::Color(128, 128, 128, 176));
+		}
 		mSoldierButtons[i].render(target);
 		target.draw(mSoldierSprites[i]);
 	}
+
+	target.draw(mLevelText);
 
 	mHero->renderGui(target);
 
 	mReturnButton.render(target);
 	mSettingsButton.render(target);
+
+	mMoneyButton.render(target);
+	target.draw(mMoneySprite);
+	target.draw(mMoneyText);
 }
 
 void GameState::onActivate()
@@ -193,7 +252,11 @@ void GameState::toPostGame(std::size_t id)
 	}
 
 	clearStates();
-	pushState("PostGameState");
+	
+	//pushState("PostGameState");
+
+	GameState::Level = mLevel + 1;
+	pushState("GameState");
 }
 
 void GameState::toSettings()

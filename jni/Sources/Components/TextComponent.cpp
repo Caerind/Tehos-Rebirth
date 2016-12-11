@@ -88,6 +88,16 @@ float TextComponent::getOutlineThickness() const
 	return mText.getOutlineThickness();
 }
 
+float TextComponent::getWidth() const
+{
+	return mText.getGlobalBounds().width;
+}
+
+float TextComponent::getHeight() const
+{
+	return mText.getGlobalBounds().height;
+}
+
 void TextComponent::serialize(Serializer& serializer)
 {
 	SceneComponent::serialize(serializer);

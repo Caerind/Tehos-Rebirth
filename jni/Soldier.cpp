@@ -1,12 +1,13 @@
 #include "Soldier.hpp"
 #include "Sources/Core/Scene.hpp"
 #include "Dead.hpp"
+#include "States\GameState.hpp"
 
 Soldier::Soldier(ke::Scene& scene, std::size_t soldierType)
 	: AI(scene)
 	, mSprite(nullptr)
 	, mSoldierType(soldierType)
-	, mPath(ke::random(50.f, 1024.f - 50.f), ke::random(50.f, 600.f)) // TODO : Set
+	, mPath(getPath())
 {
 	loadData();
 }
@@ -60,9 +61,17 @@ void Soldier::loadData()
 	mSpeed = config.getPropertyAs<float>(type + ".speed");
 }
 
-void Soldier::onDie()
+void Soldier::onDie(int gain)
 {
 	getScene().createActor<Dead>("", getTeam(), getSoldierType())->setPosition(getPosition());
+}
+
+sf::Vector2f Soldier::getPath()
+{
+	sf::Vector2f p;
+	p.x = GameState::Bounds.left + ke::random(0.f, GameState::Bounds.width);
+	p.y = GameState::Bounds.top + ke::random(0.f, GameState::Bounds.height);
+	return p;
 }
 
 void Soldier::onDirectionChanged()
@@ -125,15 +134,13 @@ void Soldier::moveTo(const sf::Vector2f& dest, sf::Time dt)
 		else
 		{
 			stopMoving();
-			mPath.x = ke::random(50.f, 1024.f - 50.f); // TODO : Set
-			mPath.y = ke::random(50.f, 512.f); // TODO : Set
+			mPath = getPath();
 		}
 	}
 	else
 	{
 		stopMoving();
-		mPath.x = ke::random(50.f, 1024.f - 50.f); // TODO : Set
-		mPath.y = ke::random(50.f, 512.f); // TODO : Set
+		mPath = getPath();
 	}
 }
 
@@ -143,8 +150,7 @@ void Soldier::updateNoTarget(sf::Time dt)
 	{
 		if (ke::distance(mPath, getPosition()) < 50.f) // TODO : Set
 		{
-			mPath.x = ke::random(50.f, 1024.f - 50.f); // TODO : Set
-			mPath.y = ke::random(50.f, 512.f); // TODO : Set
+			mPath = getPath();
 		}
 
 		moveTo(mPath, dt);

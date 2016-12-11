@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -65,6 +66,7 @@ Distribution<unsigned int> uniform(unsigned int min, unsigned int max);
 Distribution<float> uniform(float min, float max);
 Distribution<sf::Time> uniform(sf::Time min, sf::Time max);
 Distribution<sf::Vector2f> rect(const sf::Vector2f& center, const sf::Vector2f& halfSize);
+Distribution<sf::Vector2f> rect(const sf::FloatRect& rect);
 Distribution<sf::Vector2f> circle(const sf::Vector2f& center, float radius);
 Distribution<sf::Vector2f> deflect(const sf::Vector2f& direction, float maxRotation);
 Distribution<sf::Vector2f> project(const sf::Vector2f& direction, float maxRotation, float minVel, float maxVel);

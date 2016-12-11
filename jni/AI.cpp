@@ -115,14 +115,14 @@ void AI::findTarget()
 
 bool AI::collide(const sf::Vector2f& mvt)
 {
-	sf::FloatRect bounds = getBounds();
-	bounds.left += mvt.x;
-	bounds.top += mvt.y;
+	sf::Vector2f pos = getPosition();
+	pos.x += mvt.x;
+	pos.y += mvt.y;
 	ke::Scene& scene = getScene();
 	for (std::size_t i = 0; i < scene.getActorCount(); i++)
 	{
 		Entity::Ptr entity = scene.getActorT<Entity>(i);
-		if (entity != nullptr && entity->isAlive() && entity->getBounds().intersects(bounds) && entity->getId() != getId())
+		if (entity != nullptr && entity->isAlive() && entity->getBounds().contains(pos) && entity->getId() != getId())
 		{
 			return true;
 		}

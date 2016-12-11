@@ -10,6 +10,7 @@ Entity::Entity(ke::Scene& scene)
 	, mTimerSlow(0)
 	, mTimeFactor(1.f)
 {
+	mLifeBar.setScale(sf::Vector2f(0.25f, 0.5f));
 }
 
 Entity::~Entity()
@@ -63,6 +64,7 @@ void Entity::inflige(int amount)
 	{
 		mLife = mLifeMax;
 	}
+	mLifeBar.setPercent(getLifePercent());
 }
 
 void Entity::restore(int amount)
@@ -76,6 +78,7 @@ void Entity::restore(int amount)
 	{
 		mLife = mLifeMax;
 	}
+	mLifeBar.setPercent(getLifePercent());
 }
 
 bool Entity::isDead() const
@@ -110,6 +113,8 @@ void Entity::render(sf::RenderTarget& target)
 	shape.setOutlineColor(sf::Color::Red);
 	target.draw(shape);
 	#endif
+	mLifeBar.setPosition(getPosition() + sf::Vector2f(-37.5f, -65.f));
+	mLifeBar.render(target);
 }
 
 std::size_t Entity::getTeam() const
@@ -117,7 +122,7 @@ std::size_t Entity::getTeam() const
 	return 0;
 }
 
-void Entity::onDie()
+void Entity::onDie(int gain)
 {
 	getScene().createActor<Dead>("", getTeam(), 0)->setPosition(getPosition());
 }

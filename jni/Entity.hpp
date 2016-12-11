@@ -3,6 +3,8 @@
 
 #include "Sources/Core/Actor.hpp"
 
+#include "Lifebar.hpp"
+
 class Entity : public ke::Actor
 {
 	public:
@@ -31,7 +33,7 @@ class Entity : public ke::Actor
 
 		virtual std::size_t getTeam() const;
 
-		virtual void onDie();
+		virtual void onDie(int gain = 0);
 
 		virtual void slow(float factor, sf::Time slowDuration);
 
@@ -39,6 +41,7 @@ class Entity : public ke::Actor
 		ke::SpriteComponent::Ptr mShadow;
 		int mLife;
 		int mLifeMax;
+		Lifebar mLifeBar;
 
 		std::size_t mTimerSlow;
 		float mTimeFactor;
