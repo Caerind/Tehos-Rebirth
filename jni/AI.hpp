@@ -6,40 +6,43 @@
 class AI : public Entity
 {
 	public:
-		AI(ke::Scene& scene);
+		AI(ke::Scene& scene, std::size_t type);
 		~AI();
 
-		void update(sf::Time dt);
-		sf::FloatRect getBounds() const;
+		struct PosData
+		{
+			std::string id;
+			sf::Vector2f pos;
+			std::size_t team;
+			bool important;
+			sf::FloatRect box;
+		};
+		static std::vector<PosData> FramePosData;
 
-		virtual void attack();
+		void initializeComponents();
+
+		void update(sf::Time dt);
 
 	protected:
-		virtual void updateNoTarget(sf::Time dt);
-		virtual void updateTarget(sf::Time dt);
-		virtual void findTarget();
 		virtual bool collide(const sf::Vector2f& mvt);
-		virtual void moveTo(const sf::Vector2f& dest, sf::Time dt);
-		virtual void startMoving();
+		virtual void moveTo(const sf::Vector2f& dest, sf::Time dt, bool target);
 		virtual void stopMoving();
 
-		virtual void onDirectionChanged();
-		virtual void onStartMoving();
-		virtual void onStopMoving();
-		virtual void onStartAttack();
-		virtual void onAttack();
+		sf::Vector2f getPath() const;
 
 	protected:
-		Entity::Ptr mTarget;
-		float mBoxSize;
+		ke::AnimatorComponent::Ptr mSprite;
 		std::string mDirection;
 		bool mMoving;
-		std::size_t mTimerAttack;
+
+		sf::Vector2f mPath;
 
 		sf::Time mAttackCooldown;
 		sf::Time mAttackCooldownMax;
 
-		float mDistance;
+		sf::Time mAttackCast;
+		std::string mTarget;
+
 		float mSpeed;
 		int mDamage;
 };

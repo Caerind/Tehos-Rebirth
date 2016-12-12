@@ -16,9 +16,6 @@ class MenuState : public ke::State
         virtual bool update(sf::Time dt);
         virtual void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
 
-        virtual void onActivate();
-        virtual void onDeactivate();
-
     private:
 
 };

@@ -22,12 +22,3 @@ bool MenuState::update(sf::Time dt)
 void MenuState::render(sf::RenderTarget& target, sf::RenderStates states)
 {
 }
-
-void MenuState::onActivate()
-{
-}
-
-void MenuState::onDeactivate()
-{
-}
-

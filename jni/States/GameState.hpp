@@ -2,15 +2,18 @@
 #define GAMESTATE_HPP
 
 #include "../Sources/System/StateManager.hpp"
+#include "../Sources/System/Application.hpp"
 #include "../Sources/Core/Scene.hpp"
 
+#include "../Dead.hpp"
 #include "../Terrain.hpp"
 #include "../Hero.hpp"
 #include "../Enemy.hpp"
 #include "../Soldier.hpp"
 #include "../Pop.hpp"
-#include "../GameButton.hpp"
+#include "../AI.hpp"
 #include "../AIPlayer.hpp"
+#include "../GameText.hpp"
 
 class GameState : public ke::State
 {
@@ -25,45 +28,46 @@ class GameState : public ke::State
         virtual bool update(sf::Time dt);
         virtual void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
 
-        virtual void onActivate();
-        virtual void onDeactivate();
-
-		void toPostGame(std::size_t id);
-		void toSettings();
+		void newGame(int level);
+		void endGame(int id);
 
 		static int Level;
 		static bool FirstGame;
 		static sf::FloatRect Bounds;
+		static sf::FloatRect MenuButton;
+		static sf::FloatRect NextButton;
 
     private:
-		ke::Scene mScene;
-		sf::View mView;
-
-		AIPlayer mAI;
-
-		ke::Configuration& mConfig;
-
+		ke::Scene* mScene;
+		AIPlayer* mAI;
 		Hero::Ptr mHero;
 
 		int mLevel;
-		std::size_t mEnemiesCount;
-		std::size_t mSoldiersCount;
 		int mSoldierSelected;
 		int mMoney;
 		sf::Time mMoneyTime;
+
+		bool mEnded;
+		int mCrystalGained;
+		int mResult;
 		
-		std::vector<GameButton> mSoldierButtons;
+		std::vector<sf::Sprite> mSoldierButtons;
 		std::vector<sf::Sprite> mSoldierSprites;
 		std::vector<int> mSoldierPrices;
 
-		GameButton mMoneyButton;
+		sf::Sprite mMoneyButton;
 		sf::Sprite mMoneySprite;
 		sf::Text mMoneyText;
-
-		GameButton mReturnButton;
-		GameButton mSettingsButton;
-
+		sf::Sprite mReturnButton;
+		sf::Sprite mSettingsButton;
 		sf::Text mLevelText;
+
+		sf::Time mEndGameTimer;
+		sf::Sprite mWindow;
+		sf::Text mTextResult;
+		sf::Text mTextCrystals;
+		sf::Text mTextEnd;
+		sf::Text mTextNext;
 };
 
 #endif // GAMESTATE_HPP

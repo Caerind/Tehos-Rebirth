@@ -18,7 +18,6 @@ class GameEffect : public ke::Actor
 	private:
 		std::size_t mType;
 		ke::SpriteComponent::Ptr mSprite;
-		ke::ParticleComponent::Ptr mParticles;
 		sf::Time mElapsed;
 };
 

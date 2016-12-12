@@ -9,17 +9,14 @@ class Terrain : public ke::Actor
 	public:
 		typedef std::shared_ptr<Terrain> Ptr;
 
-		Terrain(ke::Scene& scene, std::size_t id);
+		Terrain(ke::Scene& scene);
 		~Terrain();
 
 		void initializeComponents();
 
-		std::size_t getTerrainType() const;
-
 	private:
 		ke::LayerComponent::Ptr mLayer;
 		ke::SpriteComponent::Ptr mShadow;
-		std::size_t mType;
 
 		class MapObject : public ke::Actor
 		{

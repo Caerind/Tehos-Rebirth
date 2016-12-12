@@ -38,6 +38,12 @@ void Lifebar::setPosition(sf::Vector2f pos)
 	mTop.setPosition(pos);
 }
 
+void Lifebar::setRotation(float rotation)
+{
+	mBack.setRotation(rotation);
+	mTop.setRotation(rotation);
+}
+
 void Lifebar::setScale(sf::Vector2f scale)
 {
 	mBack.setScale(scale);

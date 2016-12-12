@@ -1,82 +1,110 @@
 #include "GameState.hpp"
-#include "../Sources/System/Application.hpp"
-#include "../Sources/Core/Scene.hpp"
 
 int GameState::Level = 0;
 bool GameState::FirstGame = false;
-sf::FloatRect GameState::Bounds = sf::FloatRect(96, 64, 832, 672);
+sf::FloatRect GameState::Bounds = sf::FloatRect(96, 64, 1088, 624);
+sf::FloatRect GameState::MenuButton = sf::FloatRect(780,350,115,70);
+sf::FloatRect GameState::NextButton = sf::FloatRect(780,440,115,70);
+// TODO : Ensure buttons perfectly matches
 
 GameState::GameState()
 	: ke::State()
-	, mScene()
-	, mView(sf::FloatRect(0.f, 0.f, 1024.f, 768.f))
-	, mAI(mScene, GameState::Level)
-	, mConfig(getApplication().getResource<ke::Configuration>("gamedata"))
+	, mScene(nullptr)
+	, mAI(nullptr)
 	, mHero(nullptr)
-	, mLevel(GameState::Level)
-	, mSoldierSelected(-1)
+	, mLevel(0)
+	, mSoldierSelected(0)
 	, mMoney(300)
 	, mMoneyTime(sf::Time::Zero)
-	, mReturnButton("gui-game")
-	, mSettingsButton("gui-game")
-	, mMoneyButton("gui-game")
+	, mEnded(false)
 {
-	getApplication().getTime().setTimer(sf::seconds(0.1f), []()
-	{
-		ke::Log::log("Game started");
-	});
+	newGame(GameState::Level);
 
-	// Update the view
-	mScene.getView().setSize(mView.getSize());
-	mScene.getView().setCenter(mView.getSize() * 0.5f);
-
-	// Create the terrain and hero
-	mScene.createActor<Terrain>("terrain", 0);
-	mHero = mScene.createActor<Hero>("hero", 0);
-
-	// Update GUI
-	mSoldierButtons.push_back(GameButton("gui-game"));
-	mSoldierButtons.push_back(GameButton("gui-game"));
+	// Create GUI
+	ke::Texture& textureGui = getApplication().getResource<ke::Texture>("gui-game");
+	ke::Font& font = getApplication().getResource<ke::Font>("font");
+	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
+	// TODO : ADD SOLDIERS
+	mSoldierButtons.push_back(sf::Sprite());
+	mSoldierButtons.push_back(sf::Sprite());
 	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 	{
+		mSoldierButtons[i].setTexture(textureGui);
 		mSoldierButtons[i].setTextureRect(sf::IntRect(0, 0, 92, 92));
-		mSoldierButtons[i].setPosition(sf::Vector2f(0.f, i * 92.f));
+		mSoldierButtons[i].setPosition(sf::Vector2f(92.f * i, mScene->getView().getSize().y - 92.f));
 
 		mSoldierSprites.push_back(sf::Sprite(getApplication().getResource<ke::Texture>("soldier-" + ke::toString(i)), sf::IntRect(0, 64, 64, 64)));
-		mSoldierSprites[i].setPosition(sf::Vector2f(14.f, i * 92.f + 14.f));
+		mSoldierSprites[i].setPosition(sf::Vector2f(92.f * i + 14.f, mScene->getView().getSize().y - 92.f + 14.f));
 
-		mSoldierPrices.push_back(mConfig.getPropertyAs<int>("soldier-" + ke::toString(i) + ".price"));
+		mSoldierPrices.push_back(config.getPropertyAs<int>("soldier-" + ke::toString(i) + ".price"));
 	}
+	mSoldierButtons[mSoldierSelected].setTextureRect(sf::IntRect(92, 0, 92, 92));
+	mReturnButton.setTexture(textureGui);
 	mReturnButton.setTextureRect(sf::IntRect(368, 0, 92, 92));
-	mReturnButton.setPosition(mScene.getView().getSize().x - 92.f, 0.f);
+	mReturnButton.setPosition(mScene->getView().getSize().x - 92.f, 0.f);
+	mSettingsButton.setTexture(textureGui);
 	mSettingsButton.setTextureRect(sf::IntRect(460, 0, 92, 92));
-	mSettingsButton.setPosition(mScene.getView().getSize().x - 92.f, 92.f);
+	mSettingsButton.setPosition(mScene->getView().getSize().x - 92.f, 92.f);
+	mMoneyButton.setTexture(textureGui);
 	mMoneyButton.setTextureRect(sf::IntRect(0, 0, 92, 92));
-	mMoneyButton.setPosition(0.f, mScene.getView().getSize().y - 92.f);
+	mMoneyButton.setPosition(0.f, 0.f);
 	mMoneyButton.setScale(2.f, 1.f);
 	mMoneySprite.setTexture(getApplication().getResource<ke::Texture>("fx"));
 	mMoneySprite.setTextureRect(sf::IntRect(192, 0, 32, 32));
 	mMoneySprite.setOrigin(sf::Vector2f(16.f, 16.f));
-	mMoneySprite.setPosition(184.f - 46.f, mScene.getView().getSize().y - 46.f);
-	mMoneyText.setFont(getApplication().getResource<ke::Font>("font"));
+	mMoneySprite.setPosition(184.f - 46.f,  46.f);
+	mMoneyText.setFont(font);
 	mMoneyText.setString(ke::toString(mMoney));
 	mMoneyText.setCharacterSize(20);
 	mMoneyText.setFillColor(sf::Color::White);
 	mMoneyText.setOutlineThickness(2.f);
 	mMoneyText.setOutlineColor(sf::Color::Black);
 	mMoneyText.setOrigin(0.f, mMoneyText.getGlobalBounds().height * 0.5f);
-	mMoneyText.setPosition(50.f, mScene.getView().getSize().y - 46.f - 4);
-	mLevelText.setFont(getApplication().getResource<ke::Font>("font"));
+	mMoneyText.setPosition(50.f, 46.f - 4);
+	mLevelText.setFont(font);
 	mLevelText.setString("Level " + ke::toString(mLevel));
 	mLevelText.setCharacterSize(40);
 	mLevelText.setFillColor(sf::Color::White);
 	mLevelText.setOutlineThickness(2.5f);
 	mLevelText.setOutlineColor(sf::Color::Black);
 	mLevelText.setOrigin(mLevelText.getGlobalBounds().width * 0.5f, 0.f);
-	mLevelText.setPosition(mScene.getView().getSize().x * 0.5f, 10.f);
+	mLevelText.setPosition(mScene->getView().getSize().x * 0.5f, 10.f);
 
-	// TEMP CHEAT
-	getApplication().getWindow().setConsoleCommand("moneyadd", [this](const ke::Window::CommandArgs& args)
+	// Create GUI for the end
+	mWindow.setTexture(getApplication().getResource<ke::Texture>("gui-end"));
+	mWindow.setPosition(320.f, 180.f);
+	mTextResult.setFont(font);
+	mTextResult.setCharacterSize(50);
+	mTextResult.setString("Win !");
+	mTextResult.setFillColor(sf::Color::White);
+	mTextResult.setOutlineThickness(2.5f);
+	mTextResult.setOutlineColor(sf::Color::Black);
+	mTextResult.setOrigin(mTextResult.getGlobalBounds().width * 0.5f, 0.f);
+	mTextResult.setPosition(640.f, 220.f);
+	mTextCrystals.setFont(font);
+	mTextCrystals.setCharacterSize(30);
+	mTextCrystals.setString("+ 0");
+	mTextCrystals.setFillColor(sf::Color::White);
+	mTextCrystals.setOutlineThickness(2.f);
+	mTextCrystals.setOutlineColor(sf::Color::Black);
+	mTextCrystals.setPosition(320.f + 50.f, 350.f);
+	mTextEnd.setFont(font);
+	mTextEnd.setCharacterSize(30);
+	mTextEnd.setString("Level " + ke::toString(mLevel + 1) + " unlocked !");
+	mTextEnd.setFillColor(sf::Color::White);
+	mTextEnd.setOutlineThickness(2.f);
+	mTextEnd.setOutlineColor(sf::Color::Black);
+	mTextEnd.setPosition(320.f + 50.f, 460.f);
+	mTextNext.setFont(font);
+	mTextNext.setCharacterSize(30);
+	mTextNext.setString("Next");
+	mTextNext.setFillColor(sf::Color::White);
+	mTextNext.setOutlineThickness(2.f);
+	mTextNext.setOutlineColor(sf::Color::Black);
+	mTextNext.setPosition(800.f, 460.f);
+
+	// TODO : DEBUG
+	getApplication().getWindow().setConsoleCommand("money", [this](const ke::Window::CommandArgs&)
 	{
 		mMoney += 500;
 	});
@@ -88,178 +116,330 @@ GameState::~GameState()
 
 bool GameState::handleEvent(const sf::Event& event)
 {
-	if ((event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) || event.type == sf::Event::TouchBegan)
+	if (!mEnded)
 	{
-		sf::Vector2f p = getApplication().getWindow().getPointerPositionView(mView);
-		bool handled = false;
-
-		// Soldier button
-		for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
+		if ((event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) || event.type == sf::Event::TouchBegan)
 		{
-			if (!handled && mSoldierButtons[i].getBounds().contains(p))
+			sf::Vector2f p = getApplication().getWindow().getPointerPositionView(mScene->getView());
+			bool handled = false;
+
+			// Soldier button
+			for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 			{
-				handled = true;
-				mSoldierSelected = static_cast<unsigned int>(i);
-				for (std::size_t j = 0; j < mSoldierButtons.size(); j++)
+				if (!handled && mSoldierButtons[i].getGlobalBounds().contains(p))
 				{
-					mSoldierButtons[j].setTextureRect(sf::IntRect(0, 0, 92, 92));
+					handled = true;
+					mSoldierSelected = static_cast<unsigned int>(i);
+					for (std::size_t j = 0; j < mSoldierButtons.size(); j++)
+					{
+						mSoldierButtons[j].setTextureRect(sf::IntRect(0, 0, 92, 92));
+					}
+					mSoldierButtons[i].setTextureRect(sf::IntRect(92, 0, 92, 92));
 				}
-				mSoldierButtons[i].setTextureRect(sf::IntRect(92, 0, 92, 92));
+			}
+
+			// Hero button
+			if (!handled)
+			{
+				handled = mHero->handleGui(p);
+			}
+
+			// Quit
+			if (!handled && mReturnButton.getGlobalBounds().contains(p))
+			{
+				endGame(0);
+				handled = true;
+			}
+
+			// Settings
+			if (!handled && mSettingsButton.getGlobalBounds().contains(p))
+			{
+				pushState("SettingsState");
+				handled = true;
+			}
+
+			// Map
+			if (!handled && GameState::Bounds.contains(p) && mMoney >= mSoldierPrices[mSoldierSelected])
+			{
+				mMoney -= mSoldierPrices[mSoldierSelected];
+				mScene->createActor<Pop>("", 2, mSoldierSelected)->setPosition(p);
+				handled = true;
 			}
 		}
 
-		// Hero button
-		if (!handled)
+		// TODO : DEBUG
+		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right)
 		{
-			handled = mHero->handleGui(p);
+			mScene->createActor<Pop>("", 1, 0)->setPosition(getApplication().getWindow().getPointerPositionView(mScene->getView()));
 		}
-
-		if (!handled && mReturnButton.getBounds().contains(p))
+		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle)
 		{
-			toPostGame(0);
-			handled = true;
-		}
-		if (!handled && mSettingsButton.getBounds().contains(p))
-		{
-			toSettings();
-			handled = true;
-		}
-
-		// Map
-		if (!handled && GameState::Bounds.contains(p) && mSoldierSelected > -1 && mMoney >= mSoldierPrices[mSoldierSelected])
-		{
-			mMoney -= mSoldierPrices[mSoldierSelected];
-			mScene.createActor<Pop>("", 2, mSoldierSelected)->setPosition(p);
-			handled = true;
+			sf::Vector2f p = getApplication().getWindow().getPointerPositionView(mScene->getView());
+			for (std::size_t i = 0; i < 10; i++)
+			{
+				mScene->createActor<Pop>("", 2, 0)->setPosition(p + sf::Vector2f(i * 20.f, 0.f));
+			}
 		}
 	}
-
-	if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right)
+	else
 	{
-		mScene.createActor<Pop>("", 1, 0)->setPosition(getApplication().getWindow().getPointerPositionView(mView));
-	}
-	if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle)
-	{
-		mScene.createActor<Pop>("", 1, 1)->setPosition(getApplication().getWindow().getPointerPositionView(mView));
+		if ((event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) || event.type == sf::Event::TouchBegan)
+		{
+			sf::Vector2f p = getApplication().getWindow().getPointerPositionView(mScene->getView());
+			if (GameState::MenuButton.contains(p))
+			{
+				delete mAI;
+				delete mScene;
+				clearStates();
+				pushState("MenuState");
+			}
+			if (GameState::NextButton.contains(p))
+			{
+				delete mAI;
+				delete mScene;
+				if (mResult == 2)
+				{
+					newGame(mLevel + 1);
+				}
+				else
+				{
+					newGame(mLevel);
+				}
+			}
+		}
 	}
     return true;
 }
 
 bool GameState::update(sf::Time dt)
 {
-	for (std::size_t i = 0; i < mScene.getActorCount(); i++)
+	if (!mEnded)
 	{
-		Entity::Ptr entity = mScene.getActorT<Entity>(i);
-		if (entity != nullptr)
+		// Clear AI Data
+		AI::FramePosData.clear();
+
+		// Remove dead actor
+		for (std::size_t i = 0; i < mScene->getActorCount(); i++)
 		{
-			if (entity->isDead() && entity->getId() != "hero")
+			Entity::Ptr entity = mScene->getActorT<Entity>(i);
+			if (entity != nullptr)
 			{
-				int gain = 50 + ke::random(-10, +10); // TODO : Set
-				if (entity->getTeam() == 1)
+				// Handle dead entities
+				if (entity->isDead() && !entity->isHero())
 				{
-					mMoney += gain;
-					mAI.enemyDied();
+					if (entity->getTeam() == 1)
+					{
+						// Notify enemy death
+						mAI->enemyDied();
+
+						// Money Gain
+						// TODO : MONEY RANDOM BONUS
+						int bonus = 10;
+						int gain = 40 + ke::random(0, bonus);
+						mMoney += gain;
+
+						// Crystal Gain
+						int crystalGain = 0;
+						// TODO : CRYSTAL LOOT CHANCE
+						int rd = ke::random(0, 100);
+						if (rd >= 80) // 15%
+						{
+							crystalGain = 1;
+						}
+						if (rd >= 95) // 5%
+						{
+							crystalGain = 1;
+						}
+						mCrystalGained += crystalGain;
+
+						// Add text
+						mScene->createActor<GameText>("", gain, crystalGain)->setPosition(entity->getPosition());
+					}
+
+					mScene->createActor<Dead>("", entity->getTeam(), entity->getType())->setPosition(entity->getPosition());
+
+					// Remove
+					entity->remove();
 				}
-				entity->onDie(gain);
-				entity->remove();
+
+				// AI Algorithm
+				if (entity->isAlive())
+				{
+					AI::PosData d;
+					d.id = entity->getId();
+					d.pos = entity->getPosition();
+					d.important = entity->isHero();
+					d.team = entity->getTeam();
+					d.box = entity->getBounds();
+					AI::FramePosData.push_back(d);
+				}
 			}
 		}
-	}
 
-	mMoneyTime += dt;
-	if (mMoneyTime >= sf::seconds(1.f))
+		// Money
+		mMoneyTime += dt;
+		if (mMoneyTime >= sf::seconds(1.f))
+		{
+			mMoneyTime = sf::Time::Zero;
+			mMoney++;
+		}
+		mMoneyText.setString(ke::toString(mMoney));
+
+		// AI
+		mAI->update(dt);
+
+		// Scene
+		mScene->update(dt);
+
+		AI::FramePosData.clear();
+
+		// Hero Gui
+		mHero->updateGui(dt);
+
+		// End
+		if (mHero->isDead())
+		{
+			endGame(1);
+		}
+		else if (mAI->hasLost())
+		{
+			endGame(2);
+		}
+	}
+	else
 	{
-		mMoneyTime = sf::Time::Zero;
-		mMoney++;
+		mScene->update(dt);
+		mEndGameTimer += dt;
 	}
-
-	mMoneyText.setString(ke::toString(mMoney));
-
-	mAI.update(dt);
-
-	mScene.update(dt);
-
-	mHero->updateGui(dt);
-
-	if (mHero->isDead())
-	{
-		toPostGame(1);
-	}
-	if (mAI.hasLost())
-	{
-		toPostGame(2);
-	}
-
-	getApplication().getWindow().setDebugInfo("HeroLife", ke::toString(mHero->getLife()));
-	getApplication().getWindow().setDebugInfo("Enemies", ke::toString(mEnemiesCount));
-	getApplication().getWindow().setDebugInfo("Soldiers", ke::toString(mSoldiersCount));
-
     return true;
 }
 
 void GameState::render(sf::RenderTarget& target, sf::RenderStates states)
 {
-	mScene.render(target);
+	mScene->render(target);
 
-	target.setView(mView);
-	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
+	if (!mEnded)
 	{
-		if (mMoney >= mSoldierPrices[i])
+		for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 		{
-			mSoldierButtons[i].setColor(sf::Color::White);
+			if (mMoney >= mSoldierPrices[i])
+			{
+				mSoldierButtons[i].setColor(sf::Color::White);
+			}
+			else
+			{
+				mSoldierButtons[i].setColor(sf::Color(128, 128, 128, 176));
+			}
+			target.draw(mSoldierButtons[i]);
+			target.draw(mSoldierSprites[i]);
 		}
-		else
-		{
-			mSoldierButtons[i].setColor(sf::Color(128, 128, 128, 176));
-		}
-		mSoldierButtons[i].render(target);
-		target.draw(mSoldierSprites[i]);
+
+		mHero->renderGui(target);
+
+		target.draw(mLevelText);
+		target.draw(mReturnButton);
+		target.draw(mSettingsButton);
+		target.draw(mMoneyButton);
+		target.draw(mMoneySprite);
+		target.draw(mMoneyText);
 	}
 
-	target.draw(mLevelText);
+	if (getApplication().stateCount() > 1)
+	{
+		// BLACK MASK
+		sf::RectangleShape mask;
+		mask.setSize(sf::Vector2f(1280.f, 720.f));
+		mask.setFillColor(sf::Color(20, 20, 20, 128));
+		target.draw(mask);
+	}
 
-	mHero->renderGui(target);
+	if (mEnded)
+	{
+		// BLACK MASK
+		sf::RectangleShape mask;
+		mask.setSize(sf::Vector2f(1280.f, 720.f));
+		mask.setFillColor(sf::Color(20, 20, 20, 128));
+		target.draw(mask);
+		// TODO : Depend on EndTimer
 
-	mReturnButton.render(target);
-	mSettingsButton.render(target);
-
-	mMoneyButton.render(target);
-	target.draw(mMoneySprite);
-	target.draw(mMoneyText);
+		target.draw(mWindow);
+		target.draw(mTextResult);
+		target.draw(mTextCrystals);
+		target.draw(mTextEnd);
+		target.draw(mTextNext);
+	}
 }
 
-void GameState::onActivate()
+void GameState::newGame(int level)
 {
+	mEnded = false;
+	mCrystalGained = 0;
+	mLevel = level;
+	GameState::Level = level;
+	mResult = 0;
+
+	// Money
+	mMoney = 300;
+	if (mLevel == 0)
+	{
+		mMoney = 500;
+	}
+	else if (mLevel == 1)
+	{
+		mMoney = 400;
+	}
+	else
+	{
+		mMoney = 300;
+	}
+
+	// Log level start
+	getApplication().getTime().setTimer(sf::seconds(0.001f), [this]()
+	{
+		ke::Log::log("Level started : " + ke::toString(mLevel));
+	});
+
+	// Create scene and AI
+	mScene = new ke::Scene();
+	mAI = new AIPlayer(*mScene, mLevel);
+
+	// Update the view
+	mScene->getView().setSize(sf::Vector2f(1280.f, 720.f));
+	mScene->getView().setCenter(sf::Vector2f(640.f, 360.f));
+
+	// Create the terrain and hero
+	mScene->createActor<Terrain>("terrain");
+	mHero = mScene->createActor<Hero>("hero");
+
+	mEndGameTimer = sf::Time::Zero;
 }
 
-void GameState::onDeactivate()
+void GameState::endGame(int id)
 {
-}
-
-void GameState::toPostGame(std::size_t id)
-{
-	if (id == 0)
-	{
-		// TODO : Quitted
-	}
-	else if (id == 1)
-	{
-		// TODO : Lost
-	}
-	else if (id == 2)
-	{
-		// TODO : Won
-	}
-
-	clearStates();
+	mEnded = true;
+	AI::FramePosData.clear();
+	mResult = id;
 	
-	//pushState("PostGameState");
+	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
+	config.setProperty("game.crystals", mCrystalGained + config.getPropertyAs<int>("game.crystals"));
+	config.setProperty("game.played", 1 + config.getPropertyAs<int>("game.played"));
+	if (mResult == 2) // WIN
+	{
+		config.setProperty("game.level", mLevel + 1);
+		mTextResult.setString("Win !");
+		mTextResult.setOrigin(mTextResult.getGlobalBounds().width * 0.5f, 0.f);
+		mTextEnd.setString("Level " + ke::toString(mLevel + 1) + " unlocked !");
+		mTextNext.setString("Next");
+	}
+	else
+	{
+		mTextResult.setString("Loose");
+		mTextResult.setOrigin(mTextResult.getGlobalBounds().width * 0.5f, 0.f);
+		mTextEnd.setString("Carry on !");
+		mTextNext.setString("Again");
+	}
+	mTextCrystals.setString("+ " + ke::toString(mCrystalGained));
 
-	GameState::Level = mLevel + 1;
-	pushState("GameState");
-}
-
-void GameState::toSettings()
-{
-	pushState("SettingsState");
+	mCrystalGained = 0;
+	mMoney = 0;
 }

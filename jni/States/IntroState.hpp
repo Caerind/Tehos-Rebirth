@@ -10,13 +10,8 @@ class IntroState : public ke::State
 
     public:
         IntroState();
-        virtual ~IntroState();
 
-        virtual bool handleEvent(const sf::Event& event);
         virtual bool update(sf::Time dt);
-        virtual void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
-
-		void toMenu();
 
     private:
 		sf::Time mElapsed;

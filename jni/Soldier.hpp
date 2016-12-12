@@ -8,34 +8,15 @@ class Soldier : public AI
 	public:
 		typedef std::shared_ptr<Soldier> Ptr;
 
-		Soldier(ke::Scene& scene, std::size_t soldierType);
+		Soldier(ke::Scene& scene, std::size_t type);
 		~Soldier();
 
-		void initializeComponents();
 		std::size_t getTeam() const;
 
-		std::size_t getSoldierType() const;
+		bool isGiant() const;
 
+	private:
 		void loadData();
-
-		virtual void onDie(int gain = 0);
-
-		sf::Vector2f getPath();
-
-	private:
-		void onDirectionChanged();
-		void onStartMoving();
-		void onStopMoving();
-		void onStartAttack();
-
-		void moveTo(const sf::Vector2f& dest, sf::Time dt);
-
-		void updateNoTarget(sf::Time dt);
-
-	private:
-		ke::AnimatorComponent::Ptr mSprite;
-		std::size_t mSoldierType;
-		sf::Vector2f mPath;
 };
 
 #endif // SOLDIER_HPP

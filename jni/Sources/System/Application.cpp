@@ -19,7 +19,7 @@ void Application::init()
 
 		instance().mOpen = true;
 
-		Log::info("Keengine::Application started");
+		Log::info("Keengine::Application started (Desktop : " + Variant(sf::VideoMode::getDesktopMode().width, "x", sf::VideoMode::getDesktopMode().height, ")"));
 		Log::info("Current time is " + DateTime().toString("%b %d, %Y %I:%M:%S %p"));
 	}
 }

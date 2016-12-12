@@ -1,34 +1,26 @@
 #include "IntroState.hpp"
 #include "../Sources/System/Application.hpp"
+#include "GameState.hpp"
 
-IntroState::IntroState() : ke::State()
+IntroState::IntroState() 
+	: ke::State()
+	, mElapsed(sf::Time::Zero)
 {
-	mElapsed = sf::Time::Zero;
-	// TODO : Load resources on another thread
-
-}
-
-IntroState::~IntroState()
-{
-}
-
-bool IntroState::handleEvent(const sf::Event& event)
-{
-    return true;
+	getApplication().getWindow().useBackgroundScaled(getApplication().getAssetsPath() + "background.png");
 }
 
 bool IntroState::update(sf::Time dt)
 {
+	mElapsed += dt;
+	if (mElapsed > sf::seconds(1.0f))
+	{
+		// TODO : LOAD RESOURCES HERE
+
+		GameState::Level = 0;
+
+		clearStates();
+		pushState("GameState");
+	}
     return true;
-}
-
-void IntroState::render(sf::RenderTarget& target, sf::RenderStates states)
-{
-}
-
-void IntroState::toMenu()
-{
-	clearStates();
-	pushState("MenuState");
 }
 

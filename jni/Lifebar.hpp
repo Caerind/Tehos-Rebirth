@@ -16,6 +16,8 @@ class Lifebar
 
 		void setPosition(sf::Vector2f pos);
 
+		void setRotation(float rotation);
+
 		void setScale(sf::Vector2f scale);
 
 	private:

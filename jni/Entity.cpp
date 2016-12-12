@@ -2,50 +2,51 @@
 #include "Sources/Core/Scene.hpp"
 #include "Dead.hpp"
 
-Entity::Entity(ke::Scene& scene)
+Entity::Entity(ke::Scene& scene, std::size_t type)
 	: ke::Actor(scene)
-	, mShadow(nullptr)
-	, mLife(1000)
-	, mLifeMax(1000)
-	, mTimerSlow(0)
+	, mType(type)
+	, mLife(100)
+	, mLifeMax(100)
 	, mTimeFactor(1.f)
+	, mSlowRemaining(sf::Time::Zero)
 {
 	mLifeBar.setScale(sf::Vector2f(0.25f, 0.5f));
 }
 
 Entity::~Entity()
 {
-	if (mTimerSlow != 0)
-	{
-		getApplication().getTime().stopTimer(mTimerSlow);
-	}
 }
 
 void Entity::initializeComponents()
 {
-	mShadow = createComponent<ke::SpriteComponent>();
-	attachComponent(mShadow);
-	mShadow->setTexture("fx");
-	mShadow->setTextureRect(sf::IntRect(0, 0, 32, 32));
-	mShadow->setPosition(sf::Vector2f(-16.f, -16.f));
-	mShadow->setColor(sf::Color(1, 1, 1, 192));
-	mShadow->setZ(-10.f);
+	ke::SpriteComponent::Ptr shadow = createComponent<ke::SpriteComponent>();
+	attachComponent(shadow);
+	shadow->setTexture("fx");
+	shadow->setTextureRect(sf::IntRect(0, 0, 32, 32));
+	shadow->setPosition(sf::Vector2f(-16.f, -16.f));
+	shadow->setColor(sf::Color(1, 1, 1, 192));
+	if (isGiant() || isHero())
+	{
+		shadow->setPosition(sf::Vector2f(-32.f, -32.f));
+		shadow->setScale(2.f, 2.f);
+	}
+	shadow->setZ(-10.f);
 }
 
 void Entity::updateAll(sf::Time dt)
 {
-	dt *= mTimeFactor;
+	if (mSlowRemaining > sf::Time::Zero)
+	{
+		mSlowRemaining -= dt;
+		if (mSlowRemaining < sf::Time::Zero)
+		{
+			mSlowRemaining = sf::Time::Zero;
+			mTimeFactor = 0.f;
+		}
+		dt *= mTimeFactor;
+	}
 	updateComponents(dt);
 	update(dt);
-}
-
-void Entity::serialize(ke::Serializer& serializer)
-{
-}
-
-bool Entity::deserialize(ke::Serializer& serializer)
-{
-	return false;
 }
 
 int Entity::getLife() const
@@ -98,7 +99,13 @@ float Entity::getLifePercent() const
 
 sf::FloatRect Entity::getBounds() const
 {
-	return sf::FloatRect();
+	sf::Vector2f p = getPosition();
+
+	if (isGiant() || isHero())
+	{
+		return sf::FloatRect(p.x - 4.f, p.y - 4.f, 8.f, 8.f);
+	}
+	return sf::FloatRect(p.x - 2.f, p.y - 2.f, 4.f, 4.f);
 }
 
 void Entity::render(sf::RenderTarget& target)
@@ -113,7 +120,15 @@ void Entity::render(sf::RenderTarget& target)
 	shape.setOutlineColor(sf::Color::Red);
 	target.draw(shape);
 	#endif
-	mLifeBar.setPosition(getPosition() + sf::Vector2f(-37.5f, -65.f));
+
+	if (isGiant())
+	{
+		mLifeBar.setPosition(getPosition() + sf::Vector2f(-37.5f, -130.f));
+	}
+	else
+	{
+		mLifeBar.setPosition(getPosition() + sf::Vector2f(-37.5f, -65.f));
+	}
 	mLifeBar.render(target);
 }
 
@@ -122,24 +137,23 @@ std::size_t Entity::getTeam() const
 	return 0;
 }
 
-void Entity::onDie(int gain)
+std::size_t Entity::getType() const
 {
-	getScene().createActor<Dead>("", getTeam(), 0)->setPosition(getPosition());
+	return mType;
 }
 
 void Entity::slow(float factor, sf::Time slowDuration)
 {
+	mSlowRemaining = slowDuration;
 	mTimeFactor = factor;
-	if (mTimerSlow == 0)
-	{
-		mTimerSlow = getApplication().getTime().setTimer(slowDuration, [this]()
-		{
-			mTimeFactor = 1.f;
-			mTimerSlow = 0;
-		});
-	}
-	else
-	{
-		getApplication().getTime().restartTimer(mTimerSlow, slowDuration);
-	}
+}
+
+bool Entity::isHero() const
+{
+	return false;
+}
+
+bool Entity::isGiant() const
+{
+	return false;
 }

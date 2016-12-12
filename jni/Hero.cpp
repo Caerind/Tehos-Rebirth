@@ -3,22 +3,20 @@
 #include "Sources/Core/Scene.hpp"
 #include "States/GameState.hpp"
 
-Hero::Hero(ke::Scene& scene, std::size_t heroType)
+Hero::Hero(ke::Scene& scene)
 	: Entity(scene)
 	, mHero(nullptr)
-	, mHeroType(heroType)
 	, mCooldown(sf::Time::Zero)
 	, mCooldownMax(sf::seconds(5.f))
-	, mHeroSpell1("gui-game")
-	, mHeroSpell2("gui-game")
 {
-	// TODO : Allow modification
 	setPosition(sf::Vector2f(getScene().getView().getCenter().x, getScene().getView().getSize().y - 80.f));
 
 	loadData();
 
+	mHeroSpell1.setTexture(getApplication().getResource<ke::Texture>("gui-game"));
 	mHeroSpell1.setTextureRect(sf::IntRect(460 + (mSpell1 * 92), 0, 92, 92));
 	mHeroSpell1.setPosition(getScene().getView().getSize() - sf::Vector2f(184.f, 92.f));
+	mHeroSpell2.setTexture(getApplication().getResource<ke::Texture>("gui-game"));
 	mHeroSpell2.setTextureRect(sf::IntRect(460 + (mSpell2 * 92), 0, 92, 92));
 	mHeroSpell2.setPosition(getScene().getView().getSize() - sf::Vector2f(92.f, 92.f));
 	mHeroCooldown1.setTexture(getApplication().getResource<ke::Texture>("gui-game"));
@@ -30,8 +28,9 @@ Hero::Hero(ke::Scene& scene, std::size_t heroType)
 	mHeroCooldown2.setPosition(getScene().getView().getSize() - sf::Vector2f(92.f, 92.f));
 	mHeroCooldown2.setColor(sf::Color(20, 20, 20, 128));
 
-	mLifeBar.setPosition(sf::Vector2f(getScene().getView().getSize().x * 0.5f - 300.f, getScene().getView().getSize().y - 80.f));
-	mLifeBar.setScale(sf::Vector2f(2.f, 2.f));
+	mLifeBar.setPosition(sf::Vector2f(getScene().getView().getSize().x * 0.5f - 300.f, getScene().getView().getSize().y));
+	mLifeBar.setScale(sf::Vector2f(2.f, -2.f));
+	mLifeBar.setPercent(99.99f); // Display only
 }
 
 Hero::~Hero()
@@ -40,18 +39,14 @@ Hero::~Hero()
 
 void Hero::initializeComponents()
 {
+	Entity::initializeComponents();
+
 	mHero = createComponent<ke::AnimatorComponent>();
 	attachComponent(mHero);
 	mHero->addAnimation("idle", "hero-idle");
 	mHero->addAnimation("cast", "hero-cast");
 	mHero->playAnimation("idle");
-	mHero->setPosition(sf::Vector2f(-64.f, -108.f)); // TODO : Set
-}
-
-sf::FloatRect Hero::getBounds() const
-{
-	float size = 16.f; // TODO : Set
-	return sf::FloatRect(getPosition().x - size * 0.5f, getPosition().y - size * 0.5f, size, size);
+	mHero->setPosition(sf::Vector2f(-64.f, -108.f));
 }
 
 void Hero::update(sf::Time dt)
@@ -71,20 +66,15 @@ std::size_t Hero::getTeam() const
 	return 2;
 }
 
-std::size_t Hero::getHeroType() const
-{
-	return mHeroType;
-}
-
 bool Hero::handleGui(const sf::Vector2f& pointer)
 {
 	bool handled = false;
-	if (mHeroSpell1.getBounds().contains(pointer))
+	if (mHeroSpell1.getGlobalBounds().contains(pointer))
 	{
 		cast(1);
 		handled = true;
 	}
-	else if (mHeroSpell2.getBounds().contains(pointer))
+	else if (mHeroSpell2.getGlobalBounds().contains(pointer))
 	{
 		cast(2);
 		handled = true;
@@ -94,21 +84,30 @@ bool Hero::handleGui(const sf::Vector2f& pointer)
 
 void Hero::updateGui(sf::Time dt)
 {
-	float cooldownSize = getCooldownPercent() * 0.92f;
-	mHeroCooldown1.setTextureRect(sf::IntRect(460 + (mSpell1 * 92), 92 + static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
-	mHeroCooldown1.setPosition(getScene().getView().getSize() - sf::Vector2f(184.f, 92.f - cooldownSize));
-	mHeroCooldown2.setTextureRect(sf::IntRect(460 + (mSpell2 * 92), 92 + static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
-	mHeroCooldown2.setPosition(getScene().getView().getSize() - sf::Vector2f(92.f, 92.f - cooldownSize));
-	mLifeBar.setPercent(getLifePercent());
+	if (!canCast())
+	{
+		float cooldownSize = getCooldownPercent() * 0.92f;
+		mHeroCooldown1.setTextureRect(sf::IntRect(460 + (mSpell1 * 92), 92 + static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
+		mHeroCooldown1.setPosition(getScene().getView().getSize() - sf::Vector2f(184.f, 92.f - cooldownSize));
+		mHeroCooldown2.setTextureRect(sf::IntRect(460 + (mSpell2 * 92), 92 + static_cast<int>(cooldownSize), 92, 92 - static_cast<int>(cooldownSize)));
+		mHeroCooldown2.setPosition(getScene().getView().getSize() - sf::Vector2f(92.f, 92.f - cooldownSize));
+	}
 }
 
 void Hero::renderGui(sf::RenderTarget& target)
 {
-	mHeroSpell1.render(target);
-	mHeroSpell2.render(target);
-	target.draw(mHeroCooldown1);
-	target.draw(mHeroCooldown2);
+	target.draw(mHeroSpell1);
+	target.draw(mHeroSpell2);
+	if (!canCast())
+	{
+		target.draw(mHeroCooldown1);
+		target.draw(mHeroCooldown2);
+	}
 	mLifeBar.render(target);
+}
+
+void Hero::render(sf::RenderTarget& target)
+{
 }
 
 bool Hero::canCast() const
@@ -125,7 +124,6 @@ void Hero::cast(std::size_t buttonIndex)
 		mCooldown = mCooldownMax;
 
 		// Cast 
-		// TODO : Set
 		getApplication().getTime().setTimer(sf::seconds(0.3f), [buttonIndex, this]()
 		{
 			if (buttonIndex == 1)
@@ -139,7 +137,6 @@ void Hero::cast(std::size_t buttonIndex)
 		});
 
 		// Return to idle animation
-		// TODO : Set
 		getApplication().getTime().setTimer(sf::seconds(0.8f), [this]()
 		{
 			mHero->playAnimation("idle");
@@ -156,7 +153,6 @@ void Hero::loadData()
 {
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
 	mLifeMax = config.getPropertyAs<int>("hero.life");
-	mCooldownMax = config.getPropertyAs<sf::Time>("hero.cooldown");
 	mSpell1 = config.getPropertyAs<int>("hero.spell-1");
 	mSpell2 = config.getPropertyAs<int>("hero.spell-2");
 	mLife = mLifeMax;
@@ -164,6 +160,28 @@ void Hero::loadData()
 	{
 		mSpell1 = 1;
 		mSpell2 = 2;
+	}
+
+	mHealPower = 0;
+	mDamagePower = 0;
+	mSlowPower = sf::Time::Zero;
+	mShockPower = 0.1f;
+	// TODO : HERO SKILLS FROM LEVEL FUNCTIONS
+	if (mSpell1 == 1 || mSpell2 == 1)
+	{
+		mHealPower = 50;
+	}
+	if (mSpell1 == 2 || mSpell2 == 2)
+	{
+		mDamagePower = 50;
+	}
+	if (mSpell1 == 3 || mSpell2 == 3)
+	{
+		mSlowPower = sf::seconds(2.f);
+	}
+	if (mSpell1 == 4 || mSpell2 == 4)
+	{
+		mShockPower = 60.f;
 	}
 }
 
@@ -177,7 +195,7 @@ void Hero::castSpell(int spellId)
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
 			if (entity != nullptr && entity->isAlive() && entity->getTeam() == getTeam())
 			{
-				entity->restore(50); // TODO : Set
+				entity->restore(mHealPower);
 				getScene().createActor<GameEffect>("", 1)->setPosition(entity->getPosition());
 			}
 		}
@@ -189,7 +207,7 @@ void Hero::castSpell(int spellId)
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
 			if (entity != nullptr && entity->isAlive() && entity->getTeam() != getTeam())
 			{
-				entity->inflige(50); // TODO : Set
+				entity->inflige(mDamagePower);
 				getScene().createActor<GameEffect>("", 2)->setPosition(entity->getPosition());
 			}
 		}
@@ -201,7 +219,7 @@ void Hero::castSpell(int spellId)
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
 			if (entity != nullptr && entity->isAlive() && entity->getTeam() != getTeam())
 			{
-				entity->slow(0.5f, sf::seconds(2.f)); // TODO : Set
+				entity->slow(0.5f, mSlowPower);
 			}
 		}
 	}
@@ -212,7 +230,7 @@ void Hero::castSpell(int spellId)
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
 			if (entity != nullptr && entity->isAlive() && entity->getTeam() != getTeam())
 			{
-				sf::Vector2f mvt = ke::normalized(entity->getPosition() - getPosition()) * 60.f; // TODO : Set
+				sf::Vector2f mvt = ke::normalized(entity->getPosition() - getPosition()) * mShockPower;
 				if (mvt != sf::Vector2f())
 				{
 					GameEffect::Ptr effect = getScene().createActor<GameEffect>("", 3);
@@ -229,6 +247,7 @@ void Hero::castSpell(int spellId)
 	}
 }
 
-void Hero::render(sf::RenderTarget& target)
+bool Hero::isHero() const
 {
+	return true;
 }

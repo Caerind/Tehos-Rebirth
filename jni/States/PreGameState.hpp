@@ -12,12 +12,9 @@ class PreGameState : public ke::State
         PreGameState();
         virtual ~PreGameState();
 
-        virtual bool handleEvent(const sf::Event& event);
-        virtual bool update(sf::Time dt);
-        virtual void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
-
-        virtual void onActivate();
-        virtual void onDeactivate();
+        bool handleEvent(const sf::Event& event);
+        bool update(sf::Time dt);
+        void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
 
     private:
 

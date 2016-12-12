@@ -22,12 +22,3 @@ bool PreGameState::update(sf::Time dt)
 void PreGameState::render(sf::RenderTarget& target, sf::RenderStates states)
 {
 }
-
-void PreGameState::onActivate()
-{
-}
-
-void PreGameState::onDeactivate()
-{
-}
-

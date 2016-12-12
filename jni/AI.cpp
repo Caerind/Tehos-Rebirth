@@ -1,40 +1,145 @@
 #include "AI.hpp"
 #include "Sources/Core/Scene.hpp"
+#include "States/GameState.hpp"
 
-AI::AI(ke::Scene& scene)
-	: Entity(scene)
-	, mTarget(nullptr)
-	, mBoxSize(8.f)
+std::vector<AI::PosData> AI::FramePosData;
+
+AI::AI(ke::Scene& scene, std::size_t type)
+	: Entity(scene, type)
+	, mSprite(nullptr)
 	, mDirection("so")
+	, mMoving(false)
+	, mPath(getPath())
 	, mAttackCooldown(sf::Time::Zero)
 	, mAttackCooldownMax(sf::seconds(1.f))
-	, mDistance(40.f)
+	, mAttackCast(sf::Time::Zero)
+	, mTarget("")
 	, mSpeed(100.f)
 	, mDamage(20)
-	, mTimerAttack(0)
 {
 }
 
 AI::~AI()
 {
-	if (mTimerAttack != 0)
+}
+
+void AI::initializeComponents()
+{
+	Entity::initializeComponents();
+
+	mSprite = createComponent<ke::AnimatorComponent>();
+	attachComponent(mSprite);
+	if (isGiant())
 	{
-		getApplication().getTime().stopTimer(mTimerAttack);
+		mSprite->setPosition(sf::Vector2f(-64.f, -108.f));
 	}
+	else
+	{
+		mSprite->setPosition(sf::Vector2f(-32.f, -54.f));
+	}
+	std::string type = "";
+	if (getTeam() == 1)
+	{
+		type += "enemy-";
+	}
+	else if (getTeam() == 2)
+	{
+		type += "soldier-";
+	}
+	type += ke::toString(mType);
+	mSprite->addAnimation("idle-so", type + "-idle-so");
+	mSprite->addAnimation("idle-se", type + "-idle-se");
+	mSprite->addAnimation("idle-ne", type + "-idle-ne");
+	mSprite->addAnimation("idle-no", type + "-idle-no");
+	mSprite->addAnimation("walk-so", type + "-walk-so");
+	mSprite->addAnimation("walk-se", type + "-walk-se");
+	mSprite->addAnimation("walk-ne", type + "-walk-ne");
+	mSprite->addAnimation("walk-no", type + "-walk-no");
+	mSprite->addAnimation("atk-so", type + "-atk-so");
+	mSprite->addAnimation("atk-se", type + "-atk-se");
+	mSprite->addAnimation("atk-ne", type + "-atk-ne");
+	mSprite->addAnimation("atk-no", type + "-atk-no");
+	mSprite->playAnimation("walk-so");
 }
 
 void AI::update(sf::Time dt)
 {
-	findTarget();
-	if (mTarget != nullptr)
+	// ATTACKING ?
+	if (mAttackCast > sf::Time::Zero) 
 	{
-		updateTarget(dt);
+		mAttackCast -= dt;
+		if (mAttackCast <= sf::Time::Zero)
+		{
+			Entity::Ptr target = getScene().getActorT<Entity>(mTarget);
+			if (target != nullptr)
+			{
+				target->inflige(mDamage);
+			}
+			if (mAttackCast < sf::Time::Zero)
+			{
+				mAttackCast = sf::Time::Zero;
+			}
+		}
 	}
-	else
+	else // NOT ATTACKING
 	{
-		updateNoTarget(dt);
+		// FIND TARGET
+		int target = -1;
+		float distance = 10000.f;
+		for (std::size_t i = 0; i < AI::FramePosData.size(); i++)
+		{
+			PosData& d = AI::FramePosData[i];
+			if (d.team != getTeam())
+			{
+				// TODO : Use important
+				float dist = ke::distance(getPosition(), d.pos);
+				if (d.important)
+				{
+					dist *= 0.8f;
+				}
+				if (target == -1 || dist < distance)
+				{
+					target = static_cast<int>(i);
+					distance = dist;
+				}
+			}
+		}
+
+		// TARGET FOUND
+		if (target != -1)
+		{
+			PosData& d = AI::FramePosData[target];
+
+			// TARGET IS CLOSE ENOUGH TO ATTACK
+			if (ke::distance(d.pos, getPosition()) < 50.f)
+			{
+				stopMoving();
+
+				// Can attack ?
+				if (mAttackCooldown <= sf::Time::Zero)
+				{
+					mSprite->playAnimation("atk-" + mDirection);
+					mAttackCooldown = mAttackCooldownMax;
+					mAttackCast = sf::seconds(0.5f);
+					mTarget = d.id;
+				}
+			}
+			else
+			{
+				moveTo(d.pos, dt, true);
+			}
+		}
+		else // TARGET NOT FOUND
+		{
+			if (ke::distance(mPath, getPosition()) < 50.f)
+			{
+				mPath = getPath();
+			}
+			moveTo(mPath, dt, false);
+		}
 	}
 
+	// COOLDOWN
 	if (mAttackCooldown > sf::Time::Zero)
 	{
 		mAttackCooldown -= dt;
@@ -45,84 +150,15 @@ void AI::update(sf::Time dt)
 	}
 }
 
-sf::FloatRect AI::getBounds() const
-{
-	sf::Vector2f p = getPosition();
-	return sf::FloatRect(p.x - mBoxSize * 0.5f, p.y - mBoxSize * 0.5f, mBoxSize, mBoxSize);
-}
-
-void AI::attack()
-{
-	if (mTarget != nullptr && mTarget->isAlive() && ke::getLength(mTarget->getPosition() - getPosition()) < mDistance && mAttackCooldown <= sf::Time::Zero)
-	{
-		onStartAttack();
-		mTimerAttack = getApplication().getTime().setTimer(sf::seconds(0.5f), [this]()
-		{
-			if (mTarget != nullptr && mTarget->isAlive())
-			{
-				onAttack();
-			}
-			mTimerAttack = 0;
-		});
-		mAttackCooldown = mAttackCooldownMax;
-	}
-}
-
-void AI::updateNoTarget(sf::Time dt)
-{
-	if (mTarget == nullptr)
-	{
-		// Default : Nothing
-	}
-}
-
-void AI::updateTarget(sf::Time dt)
-{
-	if (mTarget != nullptr)
-	{
-		if (ke::distance(mTarget->getPosition(), getPosition()) < mDistance)
-		{
-			stopMoving();
-
-			attack();
-		}
-		else
-		{
-			moveTo(mTarget->getPosition(), dt);
-		}
-	}
-}
-
-void AI::findTarget()
-{
-	mTarget = nullptr;
-	ke::Scene& scene = getScene();
-	float distance = 10000.f;
-	for (std::size_t i = 0; i < scene.getActorCount(); i++)
-	{
-		Entity::Ptr entity = scene.getActorT<Entity>(i);
-		if (entity != nullptr && entity->isAlive() && entity->getTeam() != getTeam())
-		{
-			float d = ke::distance(getPosition(), entity->getPosition());
-			if (mTarget == nullptr || d < distance)
-			{
-				mTarget = entity;
-				distance = d;
-			}
-		}
-	}
-}
-
 bool AI::collide(const sf::Vector2f& mvt)
 {
 	sf::Vector2f pos = getPosition();
 	pos.x += mvt.x;
 	pos.y += mvt.y;
-	ke::Scene& scene = getScene();
-	for (std::size_t i = 0; i < scene.getActorCount(); i++)
+	for (std::size_t i = 0; i < AI::FramePosData.size(); i++)
 	{
-		Entity::Ptr entity = scene.getActorT<Entity>(i);
-		if (entity != nullptr && entity->isAlive() && entity->getBounds().contains(pos) && entity->getId() != getId())
+		PosData& d = AI::FramePosData[i];
+		if (d.id != getId() && d.box.contains(pos))
 		{
 			return true;
 		}
@@ -130,7 +166,7 @@ bool AI::collide(const sf::Vector2f& mvt)
 	return false;
 }
 
-void AI::moveTo(const sf::Vector2f& dest, sf::Time dt)
+void AI::moveTo(const sf::Vector2f& dest, sf::Time dt, bool target)
 {
 	sf::Vector2f delta = dest - getPosition();
 	sf::Vector2f mvt = ke::normalized(delta) * mSpeed * dt.asSeconds();
@@ -154,22 +190,59 @@ void AI::moveTo(const sf::Vector2f& dest, sf::Time dt)
 		{
 			direction = "so";
 		}
-		if (direction != mDirection)
+		if (direction != mDirection) // Direction changed
 		{
-			mDirection = direction;
-			onDirectionChanged();
+			mDirection = direction; 
+			mSprite->playAnimation("walk-" + mDirection);
 		}
-		if (!collide(mvt))
+
+		if (target)
 		{
-			move(mvt);
-			if (mvt != sf::Vector2f())
+			if (!collide(mvt))
 			{
-				startMoving();
+				move(mvt);
+				if (mvt != sf::Vector2f() && !mMoving)
+				{
+					mMoving = true;
+					mSprite->playAnimation("walk-" + mDirection);
+				}
 			}
+			else
+			{
+				// TRY ANOTHER DIRECTION
+				ke::rotate(mvt, (ke::randomBool()) ? 90.f : -90.f);
+				if (!collide(mvt))
+				{
+					move(mvt);
+					if (mvt != sf::Vector2f() && !mMoving)
+					{
+						mMoving = true;
+						mSprite->playAnimation("walk-" + mDirection);
+					}
+				}
+				else
+				{
+					// THEN STOP
+					stopMoving();
+				}
+			}
+
 		}
-		else
+		else // DOESNT HAVE TARGET
 		{
-			stopMoving();
+			if (!collide(mvt))
+			{
+				move(mvt);
+				if (mvt != sf::Vector2f() && !mMoving)
+				{
+					mMoving = true;
+					mSprite->playAnimation("walk-" + mDirection);
+				}
+			}
+			else
+			{
+				stopMoving();
+			}
 		}
 	}
 	else
@@ -178,44 +251,17 @@ void AI::moveTo(const sf::Vector2f& dest, sf::Time dt)
 	}
 }
 
-void AI::startMoving()
-{
-	if (!mMoving)
-	{
-		mMoving = true;
-		onStartMoving();
-	}
-}
-
 void AI::stopMoving()
 {
 	if (mMoving)
 	{
-		onStopMoving();
+		mSprite->playAnimation("ilde-" + mDirection);
 		mMoving = false;
+		mPath = getPath();
 	}
 }
 
-void AI::onDirectionChanged()
+sf::Vector2f AI::getPath() const
 {
-}
-
-void AI::onStartMoving()
-{
-}
-
-void AI::onStopMoving()
-{
-}
-
-void AI::onStartAttack()
-{
-}
-
-void AI::onAttack()
-{
-	if (mTarget != nullptr)
-	{
-		mTarget->inflige(mDamage);
-	}
+	return sf::Vector2f(GameState::Bounds.left + ke::random(0.f, GameState::Bounds.width), GameState::Bounds.top + ke::random(0.f, GameState::Bounds.height));
 }

@@ -19,11 +19,13 @@ class AIPlayer
 
 		bool hasLost() const;
 
-		int getEnemiesLevel() const;
-		int getEnemiesCount() const;
-		int getEnemiesToSpawn() const;
-		int getEnemiesDead() const;
+		static sf::FloatRect Area1;
+		static sf::FloatRect Area2;
+		static sf::FloatRect Area3;
 
+	private:
+		int getEnemiesLevel() const;
+		sf::Time getBaseTime() const;
 		sf::Time getReduTime() const;
 
 	private:
@@ -34,8 +36,6 @@ class AIPlayer
 		int mEnemiesDead; // Enemies that died
 
 		bool mStarted;
-
-		std::vector<sf::FloatRect> mSpawnArea;
 
 		ke::Scene& mScene;
 

@@ -2,31 +2,27 @@
 #define HERO_HPP
 
 #include "Entity.hpp"
-#include "GameButton.hpp"
 #include "GameEffect.hpp"
 #include "Lifebar.hpp"
 
 #include "Sources/Components/AnimatorComponent.hpp"
-#include "Sources/Components/SpriteComponent.hpp"
 
 class Hero : public Entity
 {
 	public:
 		typedef std::shared_ptr<Hero> Ptr;
 
-		Hero(ke::Scene& scene, std::size_t heroType);
+		Hero(ke::Scene& scene);
 		~Hero();
 
 		void initializeComponents();
-		sf::FloatRect getBounds() const;
 		void update(sf::Time dt);
 		std::size_t getTeam() const;
-
-		std::size_t getHeroType() const;
 
 		bool handleGui(const sf::Vector2f& pointer);
 		void updateGui(sf::Time dt);
 		void renderGui(sf::RenderTarget& target);
+		void render(sf::RenderTarget& target);
 
 		bool canCast() const;
 		void cast(std::size_t buttonIndex);
@@ -37,11 +33,10 @@ class Hero : public Entity
 
 		void castSpell(int spellId);
 
-		void render(sf::RenderTarget& target);
+		bool isHero() const;
 
 	private:
 		ke::AnimatorComponent::Ptr mHero;
-		std::size_t mHeroType;
 
 		sf::Time mCooldown;
 		sf::Time mCooldownMax;
@@ -49,12 +44,15 @@ class Hero : public Entity
 		int mSpell1;
 		int mSpell2;
 
-		GameButton mHeroSpell1;
-		GameButton mHeroSpell2;
+		int mHealPower;
+		int mDamagePower;
+		sf::Time mSlowPower;
+		float mShockPower;
+
+		sf::Sprite mHeroSpell1;
+		sf::Sprite mHeroSpell2;
 		sf::Sprite mHeroCooldown1;
 		sf::Sprite mHeroCooldown2;
-
-		Lifebar mLifeBar;
 };
 
 #endif // HERO_HPP

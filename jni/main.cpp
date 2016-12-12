@@ -4,15 +4,21 @@
 #include "Sources/Core/Scene.hpp"
 
 #include "States/GameState.hpp"
+#include "States/IntroState.hpp"
+#include "States/SettingsState.hpp"
 
 void generateHeroAnimation(const std::string& animation);
 void generateAIAnimation(const std::string& animation, float factor = 1.f);
 
 int main(int argc, char** argv)
 {
+	// TODO : DEBUG
 	std::string name = "LudumDare37";
 
 	ke::Log::useConsole(true);
+	ke::Log::useOnline(true, "http://atmog.altervista.org/Log/index.php");
+	ke::Log::setOnlineData("appversion", ke::getPlatformName() + "_" + ke::getVersionName());
+	ke::Log::setOnlineData("appname", name);
 
 	ke::Application::init();
 	ke::Application::setName(name);
@@ -32,6 +38,8 @@ int main(int argc, char** argv)
 
 		// Textures
 		ke::Application::getResource<ke::Texture>("gui-game", ke::Application::getAssetsPath() + "gui-game.png");
+		ke::Application::getResource<ke::Texture>("gui-end", ke::Application::getAssetsPath() + "gui-end.png");
+		ke::Application::getResource<ke::Texture>("gui-settings", ke::Application::getAssetsPath() + "gui-settings.png");
 		ke::Application::getResource<ke::Texture>("hero", ke::Application::getAssetsPath() + "hero.png");
 		ke::Application::getResource<ke::Texture>("enemy-0", ke::Application::getAssetsPath() + "enemy-0.png");
 		ke::Application::getResource<ke::Texture>("enemy-1", ke::Application::getAssetsPath() + "enemy-1.png");
@@ -61,51 +69,62 @@ int main(int argc, char** argv)
 	}
 
 	ke::Window& window = ke::Application::getWindow();
-	window.create(sf::VideoMode(1024, 768), ke::Application::getName(), sf::Style::Close);
-	window.setAction(ke::Window::Action::DebugInfo, sf::Keyboard::Quote);
-	window.setAction(ke::Window::Action::Console, sf::Keyboard::Quote);
-	window.setDebugInfoFont(&ke::Application::getResource<ke::Font>("font"));
-	window.setConsoleFont(&ke::Application::getResource<ke::Font>("font"));
+	// TODO : DEBUG
+	window.create(sf::VideoMode(1280, 720), ke::Application::getName(), sf::Style::Close);
+	//window.create(sf::VideoMode(1280, 720), ke::Application::getName(), sf::Style::Fullscreen);
+	if (ke::isWindows())
+	{
+		window.setIcon(ke::Application::getAssetsPath() + "icon.png");
+		window.useCustomMouseCursor(ke::Application::getAssetsPath() + "cursor.png");
+
+		// TODO : DEBUG
+		window.setAction(ke::Window::Action::DebugInfo, sf::Keyboard::Quote);
+		window.setAction(ke::Window::Action::Console, sf::Keyboard::Quote);
+		window.setDebugInfoFont(&ke::Application::getResource<ke::Font>("font"));
+		window.setConsoleFont(&ke::Application::getResource<ke::Font>("font"));
+	}
 
 	ke::Configuration& config = ke::Application::getResource<ke::Configuration>("gamedata");
 	if (!config.loadFromFile(ke::Application::getDataPath() + "gamedata.pure"))
 	{
-		config.setProperty("gameplayed", 0);
-		config.setProperty("gamewon", 0);
-		config.setProperty("gamelost", 0);
-		config.setProperty("crystals", 10);
+		config.setProperty("game.level", 0);
+		config.setProperty("game.played", 0);
+		config.setProperty("game.crystals", 10);
+
 		config.setProperty("hero.spell-1", 1);
 		config.setProperty("hero.spell-2", 2);
 		config.setProperty("hero.life", 1000);
-		config.setProperty("hero.cooldown", 5.f);
+		config.setProperty("hero.skill-1", 1);
+		config.setProperty("hero.skill-2", 1);
+		config.setProperty("hero.skill-3", 1);
+		config.setProperty("hero.skill-4", 1);
+
 		config.setProperty("enemy-0.life", 100);
-		config.setProperty("enemy-0.cooldown", 1.f);
-		config.setProperty("enemy-0.distance", 50.f);
 		config.setProperty("enemy-0.speed", 100.f);
 		config.setProperty("enemy-0.damage", 20);
-		config.setProperty("enemy-1.life", 1000);
-		config.setProperty("enemy-1.cooldown", 1.f);
-		config.setProperty("enemy-1.distance", 70.f);
+
+		config.setProperty("enemy-1.life", 600);
 		config.setProperty("enemy-1.speed", 70.f);
 		config.setProperty("enemy-1.damage", 40);
-		config.setProperty("soldier-0.life", 200);
-		config.setProperty("soldier-0.cooldown", 1.f);
-		config.setProperty("soldier-0.distance", 50.f);
+
+		config.setProperty("soldier-0.life", 150);
 		config.setProperty("soldier-0.speed", 100.f);
 		config.setProperty("soldier-0.damage", 20);
 		config.setProperty("soldier-0.price", 100);
-		config.setProperty("soldier-1.life", 300);
-		config.setProperty("soldier-1.cooldown", 1.f);
-		config.setProperty("soldier-1.distance", 50.f);
+
+		config.setProperty("soldier-1.life", 250);
 		config.setProperty("soldier-1.speed", 100.f);
 		config.setProperty("soldier-1.damage", 30);
 		config.setProperty("soldier-1.price", 200);
-		//config.saveToFile(); // TODO : Remove when properly initialized
+		// TODO : DEBUG
+		//config.saveToFile();
 	}
 
 	ke::Application::registerState<GameState>("GameState");
+	ke::Application::registerState<IntroState>("IntroState");
+	ke::Application::registerState<SettingsState>("SettingsState");
 
-	ke::Application::runState("GameState");
+	ke::Application::runState("IntroState");
 
 	ke::Application::quit();
 
@@ -200,8 +219,8 @@ void generateAIAnimation(const std::string& animation, float factor)
 
 	// Pop
 	ke::Animation& pop = ke::Application::getResource<ke::Animation>(animation + "-pop");
-	pop.addFrame(animation, sf::IntRect(3 * s, 4 * s, s, s), sf::seconds(0.25f));
-	pop.addFrame(animation, sf::IntRect(4 * s, 4 * s, s, s), sf::seconds(0.25f));
-	pop.addFrame(animation, sf::IntRect(5 * s, 4 * s, s, s), sf::seconds(0.25f));
+	pop.addFrame(animation, sf::IntRect(3 * s, 4 * s, s, s), sf::seconds(0.125f));
+	pop.addFrame(animation, sf::IntRect(4 * s, 4 * s, s, s), sf::seconds(0.125f));
+	pop.addFrame(animation, sf::IntRect(5 * s, 4 * s, s, s), sf::seconds(0.125f));
 	pop.addFrame(animation, sf::IntRect(6 * s, 4 * s, s, s), sf::seconds(2.f)); // Be sure to not overpass
 }

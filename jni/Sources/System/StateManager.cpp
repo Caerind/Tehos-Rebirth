@@ -4,7 +4,7 @@
 namespace ke
 {
 
-State::State() : mGui(Application::getWindow().getHandle())
+State::State()
 {
 }
 
@@ -23,14 +23,6 @@ bool State::update(sf::Time dt)
 }
 
 void State::render(sf::RenderTarget& target, sf::RenderStates states)
-{
-}
-
-void State::onActivate()
-{
-}
-
-void State::onDeactivate()
 {
 }
 
@@ -60,10 +52,6 @@ StateManager::StateManager()
 
 StateManager::~StateManager()
 {
-	for (auto itr = mStates.begin(); itr != mStates.end(); itr++)
-	{
-		(*itr)->onDeactivate();
-	}
 	mStates.clear();
 }
 
@@ -119,20 +107,6 @@ std::size_t StateManager::stateCount() const
 	return mStates.size();
 }
 
-std::vector<std::string> StateManager::getStateOrder() const
-{
-	return mStateOrder;
-}
-
-std::string StateManager::getActualState() const
-{
-	if (mStateOrder.empty())
-	{
-		return "";
-	}
-	return mStateOrder.back();
-}
-
 StateManager::PendingChange::PendingChange(Action action, std::string const& id )
 	: action(action)
 	, id(id)
@@ -146,35 +120,18 @@ void StateManager::applyPendingChanges()
 		switch (change.action)
 		{
 		case Action::Push:
-			if (!mStates.empty())
-			{
-				mStates.back()->onDeactivate();
-			}
 			mStates.push_back(createState(change.id));
-			mStateOrder.push_back(change.id);
-			mStates.back()->onActivate();
 			break;
 
 		case Action::Pop:
 			if (!mStates.empty())
 			{
-				mStates.back()->onDeactivate();
 				mStates.pop_back();
-				mStateOrder.pop_back();
-			}
-			if (!mStates.empty())
-			{
-				mStates.back()->onActivate();
 			}
 			break;
 
 		case Action::Clear:
-			if (!mStates.empty())
-			{
-				mStates.back()->onDeactivate();
-			}
 			mStates.clear();
-			mStateOrder.clear();
 			break;
 		}
 	}

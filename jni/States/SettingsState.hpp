@@ -12,15 +12,15 @@ class SettingsState : public ke::State
         SettingsState();
         virtual ~SettingsState();
 
-        virtual bool handleEvent(const sf::Event& event);
-        virtual bool update(sf::Time dt);
-        virtual void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
+        bool handleEvent(const sf::Event& event);
+		bool update(sf::Time dt);
+        void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
 
-        virtual void onActivate();
-        virtual void onDeactivate();
+		static sf::FloatRect CloseButton;
 
     private:
-
+		sf::Sprite mWindow;
+		sf::RectangleShape mButton;
 };
 
 #endif // SETTINGSTATE_HPP
