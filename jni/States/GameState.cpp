@@ -24,7 +24,7 @@ GameState::GameState()
 	ke::Texture& textureGui = getApplication().getResource<ke::Texture>("gui-game");
 	ke::Font& font = getApplication().getResource<ke::Font>("font");
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
-	// TODO : ADD SOLDIERS
+	mSoldierButtons.push_back(sf::Sprite());
 	mSoldierButtons.push_back(sf::Sprite());
 	mSoldierButtons.push_back(sf::Sprite());
 	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
@@ -102,12 +102,6 @@ GameState::GameState()
 	mTextNext.setOutlineThickness(2.f);
 	mTextNext.setOutlineColor(sf::Color::Black);
 	mTextNext.setPosition(800.f, 460.f);
-
-	// TODO : DEBUG
-	getApplication().getWindow().setConsoleCommand("money", [this](const ke::Window::CommandArgs&)
-	{
-		mMoney += 500;
-	});
 }
 
 GameState::~GameState()
@@ -129,6 +123,7 @@ bool GameState::handleEvent(const sf::Event& event)
 				if (!handled && mSoldierButtons[i].getGlobalBounds().contains(p))
 				{
 					handled = true;
+					getApplication().playSound("select");
 					mSoldierSelected = static_cast<unsigned int>(i);
 					for (std::size_t j = 0; j < mSoldierButtons.size(); j++)
 					{
@@ -147,6 +142,7 @@ bool GameState::handleEvent(const sf::Event& event)
 			// Quit
 			if (!handled && mReturnButton.getGlobalBounds().contains(p))
 			{
+				getApplication().playSound("select");
 				endGame(0);
 				handled = true;
 			}
@@ -154,6 +150,7 @@ bool GameState::handleEvent(const sf::Event& event)
 			// Settings
 			if (!handled && mSettingsButton.getGlobalBounds().contains(p))
 			{
+				getApplication().playSound("select");
 				pushState("SettingsState");
 				handled = true;
 			}
@@ -174,20 +171,16 @@ bool GameState::handleEvent(const sf::Event& event)
 		}
 		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle)
 		{
-			sf::Vector2f p = getApplication().getWindow().getPointerPositionView(mScene->getView());
-			for (std::size_t i = 0; i < 10; i++)
-			{
-				mScene->createActor<Pop>("", 2, 0)->setPosition(p + sf::Vector2f(i * 20.f, 0.f));
-			}
 		}
 	}
-	else
+	else if (mEnded && mEndGameTimer > sf::seconds(1.f))
 	{
 		if ((event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) || event.type == sf::Event::TouchBegan)
 		{
 			sf::Vector2f p = getApplication().getWindow().getPointerPositionView(mScene->getView());
 			if (GameState::MenuButton.contains(p))
 			{
+				getApplication().playSound("select");
 				delete mAI;
 				delete mScene;
 				clearStates();
@@ -195,10 +188,11 @@ bool GameState::handleEvent(const sf::Event& event)
 			}
 			if (GameState::NextButton.contains(p))
 			{
+				getApplication().playSound("select");
 				delete mAI;
 				delete mScene;
 				if (mResult == 2)
-				{
+				{					
 					newGame(mLevel + 1);
 				}
 				else
@@ -215,6 +209,8 @@ bool GameState::update(sf::Time dt)
 {
 	if (!mEnded)
 	{
+		AI::LastHitPlayed += dt;
+
 		// Clear AI Data
 		AI::FramePosData.clear();
 
@@ -233,14 +229,11 @@ bool GameState::update(sf::Time dt)
 						mAI->enemyDied();
 
 						// Money Gain
-						// TODO : MONEY RANDOM BONUS
-						int bonus = 10;
-						int gain = 40 + ke::random(0, bonus);
+						int gain = 40 + ke::random(0, 10);
 						mMoney += gain;
 
 						// Crystal Gain
 						int crystalGain = 0;
-						// TODO : CRYSTAL LOOT CHANCE
 						int rd = ke::random(0, 100);
 						if (rd >= 80) // 15%
 						{
@@ -250,6 +243,10 @@ bool GameState::update(sf::Time dt)
 						{
 							crystalGain = 1;
 						}
+						if (crystalGain >= 1)
+						{
+							getApplication().playSound("crystal");
+						}
 						mCrystalGained += crystalGain;
 
 						// Add text
@@ -257,6 +254,8 @@ bool GameState::update(sf::Time dt)
 					}
 
 					mScene->createActor<Dead>("", entity->getTeam(), entity->getType())->setPosition(entity->getPosition());
+
+					getApplication().playSound("die");
 
 					// Remove
 					entity->remove();
@@ -344,29 +343,24 @@ void GameState::render(sf::RenderTarget& target, sf::RenderStates states)
 		target.draw(mMoneyText);
 	}
 
-	if (getApplication().stateCount() > 1)
-	{
-		// BLACK MASK
-		sf::RectangleShape mask;
-		mask.setSize(sf::Vector2f(1280.f, 720.f));
-		mask.setFillColor(sf::Color(20, 20, 20, 128));
-		target.draw(mask);
-	}
-
 	if (mEnded)
 	{
 		// BLACK MASK
 		sf::RectangleShape mask;
+		float a = (mEndGameTimer < sf::seconds(1.f)) ? mEndGameTimer.asSeconds() * 128.f : 128.f;
+		float c = (mEndGameTimer < sf::seconds(1.f)) ? 255.f - mEndGameTimer.asSeconds() * 236.f : 20.f;
 		mask.setSize(sf::Vector2f(1280.f, 720.f));
-		mask.setFillColor(sf::Color(20, 20, 20, 128));
+		mask.setFillColor(sf::Color(static_cast<unsigned int>(c), static_cast<unsigned int>(c), static_cast<unsigned int>(c), static_cast<unsigned int>(a)));
 		target.draw(mask);
-		// TODO : Depend on EndTimer
 
-		target.draw(mWindow);
-		target.draw(mTextResult);
-		target.draw(mTextCrystals);
-		target.draw(mTextEnd);
-		target.draw(mTextNext);
+		if (mEndGameTimer > sf::seconds(1.f))
+		{
+			target.draw(mWindow);
+			target.draw(mTextResult);
+			target.draw(mTextCrystals);
+			target.draw(mTextEnd);
+			target.draw(mTextNext);
+		}
 	}
 }
 
@@ -375,8 +369,9 @@ void GameState::newGame(int level)
 	mEnded = false;
 	mCrystalGained = 0;
 	mLevel = level;
-	GameState::Level = level;
 	mResult = 0;
+
+	mLevelText.setString("Level " + ke::toString(mLevel));
 
 	// Money
 	mMoney = 300;

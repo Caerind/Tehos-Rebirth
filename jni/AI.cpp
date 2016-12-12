@@ -3,6 +3,7 @@
 #include "States/GameState.hpp"
 
 std::vector<AI::PosData> AI::FramePosData;
+sf::Time AI::LastHitPlayed;
 
 AI::AI(ke::Scene& scene, std::size_t type)
 	: Entity(scene, type)
@@ -74,6 +75,11 @@ void AI::update(sf::Time dt)
 			if (target != nullptr)
 			{
 				target->inflige(mDamage);
+				if (AI::LastHitPlayed > sf::seconds(0.1f))
+				{
+					getApplication().playSound("atk");
+					AI::LastHitPlayed = sf::Time::Zero;
+				}
 			}
 			if (mAttackCast < sf::Time::Zero)
 			{
@@ -91,7 +97,6 @@ void AI::update(sf::Time dt)
 			PosData& d = AI::FramePosData[i];
 			if (d.team != getTeam())
 			{
-				// TODO : Use important
 				float dist = ke::distance(getPosition(), d.pos);
 				if (d.important)
 				{

@@ -15,7 +15,7 @@ GameEffect::~GameEffect()
 
 void GameEffect::initializeComponents()
 {
-	if (mType == 1)
+	if (mType == 1) // Heal
 	{
 		ke::ParticleComponent::Ptr particles = createComponent<ke::ParticleComponent>();
 		attachComponent(particles);
@@ -28,16 +28,16 @@ void GameEffect::initializeComponents()
 		particles->setParticleColor(ke::Distributions::colorGrade(sf::Color(0, 255, 255), 0.6f, 1.f));
 		particles->emitParticles(100);
 	}
-	if (mType == 2 || mType == 3)
+	if (mType == 2 || mType == 4)
 	{
 		mSprite = createComponent<ke::SpriteComponent>();
 		attachComponent(mSprite);
 		mSprite->setTexture("fx");
-		if (mType == 2)
+		if (mType == 2) // Damage
 		{
 			mSprite->setTextureRect(sf::IntRect(96, 0, 32, 32));
 		}
-		else if (mType == 3)
+		else if (mType == 4) // Shock
 		{
 			mSprite->setTextureRect(sf::IntRect(128, 0, 32, 32));
 		}

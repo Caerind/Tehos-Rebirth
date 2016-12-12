@@ -16,11 +16,12 @@ class SettingsState : public ke::State
 		bool update(sf::Time dt);
         void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
 
-		static sf::FloatRect CloseButton;
-
     private:
 		sf::Sprite mWindow;
-		sf::RectangleShape mButton;
+		sf::FloatRect mCloseButton;
+		sf::RectangleShape mSoundButton;
+		sf::RectangleShape mMusicButton;
+		sf::RectangleShape mMask;
 };
 
 #endif // SETTINGSTATE_HPP

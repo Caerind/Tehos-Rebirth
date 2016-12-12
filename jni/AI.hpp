@@ -23,6 +23,8 @@ class AI : public Entity
 
 		void update(sf::Time dt);
 
+		static sf::Time LastHitPlayed;
+
 	protected:
 		virtual bool collide(const sf::Vector2f& mvt);
 		virtual void moveTo(const sf::Vector2f& dest, sf::Time dt, bool target);

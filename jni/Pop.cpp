@@ -10,6 +10,14 @@ Pop::Pop(ke::Scene& scene, std::size_t team, std::size_t type)
 	, mType(type)
 	, mElapsed(sf::Time::Zero)
 {
+	if (mTeam == 1)
+	{
+		getApplication().playSound("spawn-e");
+	}
+	else if (mTeam == 2)
+	{
+		getApplication().playSound("spawn-s");
+	}
 }
 
 Pop::~Pop()

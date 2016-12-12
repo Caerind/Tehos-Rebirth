@@ -13,6 +13,11 @@ class IntroState : public ke::State
 
         virtual bool update(sf::Time dt);
 
+		void loadResources();
+
+		void generateHeroAnimation(const std::string& animation);
+		void generateAIAnimation(const std::string& animation, float factor = 1.f);
+
     private:
 		sf::Time mElapsed;
 };

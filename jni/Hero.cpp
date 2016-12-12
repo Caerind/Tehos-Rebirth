@@ -190,6 +190,7 @@ void Hero::castSpell(int spellId)
 	ke::Scene& scene = getScene();
 	if (spellId == 1) // Heal
 	{
+		getApplication().playSound("sp-1");
 		for (std::size_t i = 0; i < scene.getActorCount(); i++)
 		{
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
@@ -202,6 +203,7 @@ void Hero::castSpell(int spellId)
 	}
 	else if (spellId == 2) // Damage
 	{
+		getApplication().playSound("sp-2");
 		for (std::size_t i = 0; i < scene.getActorCount(); i++)
 		{
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
@@ -214,6 +216,7 @@ void Hero::castSpell(int spellId)
 	}
 	else if (spellId == 3) // Slow
 	{
+		getApplication().playSound("sp-3");
 		for (std::size_t i = 0; i < scene.getActorCount(); i++)
 		{
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
@@ -225,6 +228,7 @@ void Hero::castSpell(int spellId)
 	}
 	else if (spellId == 4) // Shock
 	{
+		getApplication().playSound("sp-4");
 		for (std::size_t i = 0; i < scene.getActorCount(); i++)
 		{
 			Entity::Ptr entity = scene.getActorT<Entity>(i);
@@ -233,7 +237,7 @@ void Hero::castSpell(int spellId)
 				sf::Vector2f mvt = ke::normalized(entity->getPosition() - getPosition()) * mShockPower;
 				if (mvt != sf::Vector2f())
 				{
-					GameEffect::Ptr effect = getScene().createActor<GameEffect>("", 3);
+					GameEffect::Ptr effect = getScene().createActor<GameEffect>("", 4);
 					effect->setPosition(entity->getPosition());
 					effect->setRotation(ke::getPolarAngle(mvt) + 90.f);
 				}
