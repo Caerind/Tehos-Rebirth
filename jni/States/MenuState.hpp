@@ -17,6 +17,17 @@ class MenuState : public ke::State
         virtual void render(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
 
     private:
+		sf::Text mCrystalText;
+
+		sf::FloatRect mSettingsButton;
+		sf::FloatRect mQuitButton;
+		sf::FloatRect mPlayButton;
+
+		int mSpell1;
+		int mSpell2;
+		sf::Sprite mSpell1Sprite;
+		sf::Sprite mSpell2Sprite;
+
 
 };
 

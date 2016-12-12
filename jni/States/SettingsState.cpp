@@ -11,16 +11,11 @@ SettingsState::SettingsState() : ke::State()
 	mMask.setFillColor(sf::Color(20, 20, 20, 128));
 
 	// TODO : PLACE SETTINGS BUTTONS
-	float x = 640.f + 0.f;
-	float y1 = 360.f + 0.f;
-	float y2 = 360.f + 0.f;
-	sf::Vector2f size = sf::Vector2f(50.f, 50.f);
-	mCloseButton = sf::FloatRect(640.f + 0.f, 360.f + 0.f, 0.f, 0.f);
-
-	mSoundButton.setPosition(x, y1);
-	mMusicButton.setPosition(x, y2);
-	mSoundButton.setSize(size);
-	mMusicButton.setSize(size);
+	mCloseButton = sf::FloatRect(320.f + 0.f, 180.f + 0.f, 0.f, 0.f);
+	mSoundButton.setPosition(320.f + 0.f, 180.f + 0.f);
+	mMusicButton.setPosition(320.f + 0.f, 180.f + 100.f);
+	mSoundButton.setSize(sf::Vector2f(50.f, 50.f));
+	mMusicButton.setSize(sf::Vector2f(50.f, 50.f));
 
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
 	mSoundButton.setFillColor((config.getPropertyAs<bool>("game.sound")) ? sf::Color::White : sf::Color::Black);

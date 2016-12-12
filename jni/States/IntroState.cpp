@@ -16,10 +16,10 @@ bool IntroState::update(sf::Time dt)
 	{
 		loadResources();
 
-		GameState::Level = 0; // TODO : Move on PreGame
-
 		clearStates();
-		pushState("GameState");  // TODO : Go to Menu
+		// TODO : TEMP GAME FROM INTRO
+		//pushState("MenuState");
+		pushState("GameState");
 
 		getApplication().playMusic("music");
 	}
@@ -35,9 +35,11 @@ void IntroState::loadResources()
 	ke::Application::getResource<ke::Texture>("gui-game", ke::Application::getAssetsPath() + "gui-game.png");
 	ke::Application::getResource<ke::Texture>("gui-end", ke::Application::getAssetsPath() + "gui-end.png");
 	ke::Application::getResource<ke::Texture>("gui-settings", ke::Application::getAssetsPath() + "gui-settings.png");
+	ke::Application::getResource<ke::Texture>("gui-pregame", ke::Application::getAssetsPath() + "gui-pregame.png");
 	ke::Application::getResource<ke::Texture>("hero", ke::Application::getAssetsPath() + "hero.png");
 	ke::Application::getResource<ke::Texture>("enemy-0", ke::Application::getAssetsPath() + "enemy-0.png");
 	ke::Application::getResource<ke::Texture>("enemy-1", ke::Application::getAssetsPath() + "enemy-1.png");
+	ke::Application::getResource<ke::Texture>("enemy-2", ke::Application::getAssetsPath() + "enemy-2.png");
 	ke::Application::getResource<ke::Texture>("soldier-0", ke::Application::getAssetsPath() + "soldier-0.png");
 	ke::Application::getResource<ke::Texture>("soldier-1", ke::Application::getAssetsPath() + "soldier-1.png");
 	ke::Application::getResource<ke::Texture>("soldier-2", ke::Application::getAssetsPath() + "soldier-2.png");
@@ -74,7 +76,8 @@ void IntroState::loadResources()
 
 	// Animations AI
 	generateAIAnimation("enemy-0");
-	generateAIAnimation("enemy-1", 2.f);
+	generateAIAnimation("enemy-1");
+	generateAIAnimation("enemy-2", 2.f);
 	generateAIAnimation("soldier-0");
 	generateAIAnimation("soldier-1");
 	generateAIAnimation("soldier-2");

@@ -110,17 +110,6 @@ sf::FloatRect Entity::getBounds() const
 
 void Entity::render(sf::RenderTarget& target)
 {
-	#ifdef _DEBUG
-	sf::FloatRect bounds = getBounds();
-	sf::RectangleShape shape;
-	shape.setSize(sf::Vector2f(bounds.width, bounds.height));
-	shape.setPosition(bounds.left, bounds.top);
-	shape.setFillColor(sf::Color::Transparent);
-	shape.setOutlineThickness(1.f);
-	shape.setOutlineColor(sf::Color::Red);
-	target.draw(shape);
-	#endif
-
 	if (isGiant())
 	{
 		mLifeBar.setPosition(getPosition() + sf::Vector2f(-37.5f, -130.f));

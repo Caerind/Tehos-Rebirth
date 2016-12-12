@@ -6,10 +6,12 @@
 #include "States/GameState.hpp"
 #include "States/IntroState.hpp"
 #include "States/SettingsState.hpp"
+#include "States/MenuState.hpp"
+#include "States/PreGameState.hpp"
 
 int main(int argc, char** argv)
 {
-	std::string name = "Tehos";
+	std::string name = "Tehos : Rebirth";
 
 	ke::Log::useConsole(true);
 	ke::Log::useOnline(true, "http://atmog.altervista.org/Log/index.php");
@@ -40,9 +42,12 @@ int main(int argc, char** argv)
 		window.setMouseCursorRotation(-20.f);
 	}
 
+	// Config file
 	ke::Configuration& config = ke::Application::getResource<ke::Configuration>("gamedata");
 	if (!config.loadFromFile(ke::Application::getDataPath() + "gamedata.pure"))
 	{
+		GameState::FirstGame = true;
+
 		config.setProperty("game.level", 0);
 		config.setProperty("game.played", 0);
 		config.setProperty("game.crystals", 10);
@@ -61,9 +66,13 @@ int main(int argc, char** argv)
 		config.setProperty("enemy-0.speed", 100.f);
 		config.setProperty("enemy-0.damage", 20);
 
-		config.setProperty("enemy-1.life", 600);
-		config.setProperty("enemy-1.speed", 70.f);
-		config.setProperty("enemy-1.damage", 40);
+		config.setProperty("enemy-1.life", 100);
+		config.setProperty("enemy-1.speed", 100.f);
+		config.setProperty("enemy-1.damage", 20);
+
+		config.setProperty("enemy-2.life", 600);
+		config.setProperty("enemy-2.speed", 70.f);
+		config.setProperty("enemy-2.damage", 40);
 
 		config.setProperty("soldier-0.life", 150);
 		config.setProperty("soldier-0.speed", 100.f);
@@ -90,6 +99,8 @@ int main(int argc, char** argv)
 	ke::Application::registerState<GameState>("GameState");
 	ke::Application::registerState<IntroState>("IntroState");
 	ke::Application::registerState<SettingsState>("SettingsState");
+	ke::Application::registerState<MenuState>("MenuState");
+	ke::Application::registerState<PreGameState>("PreGameState");
 
 	ke::Application::runState("IntroState");
 

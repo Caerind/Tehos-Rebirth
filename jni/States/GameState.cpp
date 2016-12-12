@@ -5,7 +5,7 @@ bool GameState::FirstGame = false;
 sf::FloatRect GameState::Bounds = sf::FloatRect(96, 64, 1088, 624);
 sf::FloatRect GameState::MenuButton = sf::FloatRect(780,350,115,70);
 sf::FloatRect GameState::NextButton = sf::FloatRect(780,440,115,70);
-// TODO : Ensure buttons perfectly matches
+// TODO : PLACE POST GAME BUTTONS
 
 GameState::GameState()
 	: ke::State()
@@ -162,15 +162,6 @@ bool GameState::handleEvent(const sf::Event& event)
 				mScene->createActor<Pop>("", 2, mSoldierSelected)->setPosition(p);
 				handled = true;
 			}
-		}
-
-		// TODO : DEBUG
-		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Right)
-		{
-			mScene->createActor<Pop>("", 1, 0)->setPosition(getApplication().getWindow().getPointerPositionView(mScene->getView()));
-		}
-		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle)
-		{
 		}
 	}
 	else if (mEnded && mEndGameTimer > sf::seconds(1.f))
@@ -371,6 +362,8 @@ void GameState::newGame(int level)
 	mLevel = level;
 	mResult = 0;
 
+	GameState::Level = level;
+
 	mLevelText.setString("Level " + ke::toString(mLevel));
 
 	// Money
@@ -414,6 +407,13 @@ void GameState::endGame(int id)
 	mEnded = true;
 	AI::FramePosData.clear();
 	mResult = id;
+
+	if (GameState::FirstGame)
+	{
+		mCrystalGained++;
+		GameState::FirstGame = false;
+	}
+	mCrystalGained++;
 	
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
 	config.setProperty("game.crystals", mCrystalGained + config.getPropertyAs<int>("game.crystals"));
