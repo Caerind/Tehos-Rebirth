@@ -19,6 +19,8 @@ class AIPlayer
 
 		bool hasLost() const;
 
+		int getEnemyToSpawn();
+
 		static sf::FloatRect Area1;
 		static sf::FloatRect Area2;
 		static sf::FloatRect Area3;

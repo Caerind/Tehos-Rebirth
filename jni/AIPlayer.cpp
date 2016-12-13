@@ -12,7 +12,6 @@ AIPlayer::AIPlayer(ke::Scene& scene, int level)
 	mEnemiesLevel = getEnemiesLevel();
 	mBaseTime = getBaseTime();
 
-
 	mEnemiesToSpawn = mEnemiesLevel;
 	mEnemiesCount = 0;
 	mEnemiesDead = 0;
@@ -81,6 +80,26 @@ void AIPlayer::enemyDied()
 bool AIPlayer::hasLost() const
 {
 	return (mEnemiesCount <= 0 && mEnemiesDead >= mEnemiesLevel && mEnemiesToSpawn <= 0);
+}
+
+int AIPlayer::getEnemyToSpawn()
+{
+	if (mEnemiesDead > mEnemiesLevel / 2)
+	{
+		int r = ke::random(1, 100);
+		if (r >= 95)
+		{
+			return 2;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 int AIPlayer::getEnemiesLevel() const

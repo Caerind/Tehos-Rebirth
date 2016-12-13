@@ -28,9 +28,10 @@ void Enemy::loadData()
 	std::string type = "enemy-" + ke::toString(mType);
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
 
-	int bonusWave = static_cast<int>(2 * std::pow(1.2, GameState::Level)) - 2;
-	mLifeMax = config.getPropertyAs<int>(type + ".life") + bonusWave;
-	mDamage = config.getPropertyAs<int>(type + ".damage") + bonusWave;
+	int bonusWaveLife = static_cast<int>(2 * std::pow(1.2, GameState::Level)) - 2;
+	int bonusWaveDamage = static_cast<int>(1 * std::pow(1.2, GameState::Level)) - 1;
+	mLifeMax = config.getPropertyAs<int>(type + ".life") + bonusWaveLife;
+	mDamage = config.getPropertyAs<int>(type + ".damage") + bonusWaveDamage;
 	mSpeed = config.getPropertyAs<float>(type + ".speed");
 
 	mLife = mLifeMax;

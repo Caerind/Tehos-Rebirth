@@ -89,7 +89,7 @@ float TimeSystem::getTimerPercent(std::size_t handle) const
 {
 	if (mTimers.find(handle) != mTimers.end())
 	{
-		return mTimers.at(handle).elapsed.asSeconds() / mTimers.at(handle).duration.asSeconds();
+		return mTimers.at(handle).elapsed.asSeconds() / mTimers.at(handle).duration.asSeconds(); // TODO : ZERO DIV ERROR
 	}
 	return 0.f;
 }

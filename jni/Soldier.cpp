@@ -27,9 +27,10 @@ void Soldier::loadData()
 {
 	std::string type = "soldier-" + ke::toString(mType);
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
-
-	mLifeMax = config.getPropertyAs<int>(type + ".life");
-	mDamage = config.getPropertyAs<int>(type + ".damage");
+	int bonusLife = static_cast<int>(2 * std::pow(1.2, config.getPropertyAs<int>(type + ".slife")));
+	int bonusDamage = static_cast<int>(2 * std::pow(1.2, config.getPropertyAs<int>(type + ".sdamage")));
+	mLifeMax = config.getPropertyAs<int>(type + ".life") + bonusLife;
+	mDamage = config.getPropertyAs<int>(type + ".damage") + bonusDamage;
 	mSpeed = config.getPropertyAs<float>(type + ".speed");
 
 	mLife = mLifeMax;

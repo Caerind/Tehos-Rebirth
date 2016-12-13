@@ -5,7 +5,6 @@ bool GameState::FirstGame = false;
 sf::FloatRect GameState::Bounds = sf::FloatRect(96, 64, 1088, 624);
 sf::FloatRect GameState::MenuButton = sf::FloatRect(780,350,115,70);
 sf::FloatRect GameState::NextButton = sf::FloatRect(780,440,115,70);
-// TODO : PLACE POST GAME BUTTONS
 
 GameState::GameState()
 	: ke::State()
@@ -25,8 +24,8 @@ GameState::GameState()
 	ke::Font& font = getApplication().getResource<ke::Font>("font");
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
 	mSoldierButtons.push_back(sf::Sprite());
-	mSoldierButtons.push_back(sf::Sprite());
-	mSoldierButtons.push_back(sf::Sprite());
+	//mSoldierButtons.push_back(sf::Sprite());
+	//mSoldierButtons.push_back(sf::Sprite());
 	for (std::size_t i = 0; i < mSoldierButtons.size(); i++)
 	{
 		mSoldierButtons[i].setTexture(textureGui);
@@ -71,16 +70,7 @@ GameState::GameState()
 	mLevelText.setPosition(mScene->getView().getSize().x * 0.5f, 10.f);
 
 	// Create GUI for the end
-	mWindow.setTexture(getApplication().getResource<ke::Texture>("gui-end"));
 	mWindow.setPosition(320.f, 180.f);
-	mTextResult.setFont(font);
-	mTextResult.setCharacterSize(50);
-	mTextResult.setString("Win !");
-	mTextResult.setFillColor(sf::Color::White);
-	mTextResult.setOutlineThickness(2.5f);
-	mTextResult.setOutlineColor(sf::Color::Black);
-	mTextResult.setOrigin(mTextResult.getGlobalBounds().width * 0.5f, 0.f);
-	mTextResult.setPosition(640.f, 220.f);
 	mTextCrystals.setFont(font);
 	mTextCrystals.setCharacterSize(30);
 	mTextCrystals.setString("+ 0");
@@ -95,13 +85,6 @@ GameState::GameState()
 	mTextEnd.setOutlineThickness(2.f);
 	mTextEnd.setOutlineColor(sf::Color::Black);
 	mTextEnd.setPosition(320.f + 50.f, 460.f);
-	mTextNext.setFont(font);
-	mTextNext.setCharacterSize(30);
-	mTextNext.setString("Next");
-	mTextNext.setFillColor(sf::Color::White);
-	mTextNext.setOutlineThickness(2.f);
-	mTextNext.setOutlineColor(sf::Color::Black);
-	mTextNext.setPosition(800.f, 460.f);
 }
 
 GameState::~GameState()
@@ -112,6 +95,15 @@ bool GameState::handleEvent(const sf::Event& event)
 {
 	if (!mEnded)
 	{
+		if (event.type == sf::Event::MouseButtonPressed)
+		{
+			mScene->createActor<Pop>("", ke::random(1,2), 0)->setPosition(getApplication().getWindow().getPointerPositionView(mScene->getView()));
+		}
+		if (event.type == sf::Event::KeyPressed)
+		{
+			getApplication().getWindow().screenshot();
+		}
+
 		if ((event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) || event.type == sf::Event::TouchBegan)
 		{
 			sf::Vector2f p = getApplication().getWindow().getPointerPositionView(mScene->getView());
@@ -272,6 +264,7 @@ bool GameState::update(sf::Time dt)
 		{
 			mMoneyTime = sf::Time::Zero;
 			mMoney++;
+			getApplication().getResource<ke::Configuration>("gamedata").saveToFile();
 		}
 		mMoneyText.setString(ke::toString(mMoney));
 
@@ -410,28 +403,23 @@ void GameState::endGame(int id)
 
 	if (GameState::FirstGame)
 	{
-		mCrystalGained++;
+		mCrystalGained += 3;
 		GameState::FirstGame = false;
 	}
-	mCrystalGained++;
 	
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
 	config.setProperty("game.crystals", mCrystalGained + config.getPropertyAs<int>("game.crystals"));
 	config.setProperty("game.played", 1 + config.getPropertyAs<int>("game.played"));
 	if (mResult == 2) // WIN
 	{
+		mWindow.setTexture(getApplication().getResource<ke::Texture>("gui-endWin"));
 		config.setProperty("game.level", mLevel + 1);
-		mTextResult.setString("Win !");
-		mTextResult.setOrigin(mTextResult.getGlobalBounds().width * 0.5f, 0.f);
 		mTextEnd.setString("Level " + ke::toString(mLevel + 1) + " unlocked !");
-		mTextNext.setString("Next");
 	}
 	else
 	{
-		mTextResult.setString("Loose");
-		mTextResult.setOrigin(mTextResult.getGlobalBounds().width * 0.5f, 0.f);
+		mWindow.setTexture(getApplication().getResource<ke::Texture>("gui-endLose"));
 		mTextEnd.setString("Carry on !");
-		mTextNext.setString("Again");
 	}
 	mTextCrystals.setString("+ " + ke::toString(mCrystalGained));
 

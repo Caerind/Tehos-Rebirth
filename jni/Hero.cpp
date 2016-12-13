@@ -29,7 +29,7 @@ Hero::Hero(ke::Scene& scene)
 	mHeroCooldown2.setColor(sf::Color(20, 20, 20, 128));
 
 	mLifeBar.setPosition(sf::Vector2f(getScene().getView().getSize().x * 0.5f - 300.f, getScene().getView().getSize().y));
-	mLifeBar.setScale(sf::Vector2f(2.f, -2.f));
+	mLifeBar.setScale(sf::Vector2f(1.f, -1.f));
 	mLifeBar.setPercent(99.99f); // Display only
 }
 
@@ -117,7 +117,7 @@ bool Hero::canCast() const
 
 void Hero::cast(std::size_t buttonIndex)
 {
-	if (canCast())
+	if (canCast() && ((buttonIndex == 1 && mSpell1 > 0) || (buttonIndex == 2 && mSpell2 > 0)))
 	{
 		// Play casting animation
 		mHero->playAnimation("cast");
@@ -152,36 +152,34 @@ float Hero::getCooldownPercent()
 void Hero::loadData()
 {
 	ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
-	mLifeMax = config.getPropertyAs<int>("hero.life");
+	int bonusLife = static_cast<int>(2 * std::pow(1.2, config.getPropertyAs<int>("hero.slife")));
+	mLifeMax = config.getPropertyAs<int>("hero.life") + bonusLife;
 	mSpell1 = config.getPropertyAs<int>("hero.spell-1");
 	mSpell2 = config.getPropertyAs<int>("hero.spell-2");
 	mLife = mLifeMax;
-	if (mSpell1 == 0 && mSpell2 == 0)
-	{
-		mSpell1 = 1;
-		mSpell2 = 2;
-	}
-
-	mHealPower = 0;
-	mDamagePower = 0;
+	mHealPower = 1;
+	mDamagePower = 1;
 	mSlowPower = sf::Time::Zero;
-	mShockPower = 0.1f;
-	// TODO : HERO SKILLS FROM LEVEL FUNCTIONS
+	mShockPower = 1.f;
 	if (mSpell1 == 1 || mSpell2 == 1)
 	{
-		mHealPower = 50;
+		int bonusHeal = static_cast<int>(2 * std::pow(1.2, config.getPropertyAs<int>("hero.s1")));
+		mHealPower = 50 + bonusHeal;
 	}
 	if (mSpell1 == 2 || mSpell2 == 2)
 	{
-		mDamagePower = 50;
+		int bonusDamage = static_cast<int>(2 * std::pow(1.2, config.getPropertyAs<int>("hero.s2")));
+		mDamagePower = 40 + bonusDamage;
 	}
 	if (mSpell1 == 3 || mSpell2 == 3)
 	{
-		mSlowPower = sf::seconds(2.f);
+		float bonusSlow = static_cast<float>(2 * std::pow(1.2, config.getPropertyAs<int>("hero.s3")));
+		mSlowPower = sf::seconds(3.f) + sf::seconds(bonusSlow);
 	}
 	if (mSpell1 == 4 || mSpell2 == 4)
 	{
-		mShockPower = 60.f;
+		float bonusShock = static_cast<float>(2 * std::pow(1.2, config.getPropertyAs<int>("hero.s4")));
+		mShockPower = 90.f + bonusShock;
 	}
 }
 

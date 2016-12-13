@@ -3,6 +3,8 @@
 
 #include "../Sources/System/StateManager.hpp"
 
+#include <SFML/Network.hpp>
+
 class IntroState : public ke::State
 {
     public:
@@ -20,6 +22,7 @@ class IntroState : public ke::State
 
     private:
 		sf::Time mElapsed;
+		bool mAtmog;
 };
 
 #endif // INTROSTATE_HPP

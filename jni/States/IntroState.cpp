@@ -6,22 +6,60 @@ IntroState::IntroState()
 	: ke::State()
 	, mElapsed(sf::Time::Zero)
 {
-	getApplication().getWindow().useBackgroundScaled(getApplication().getAssetsPath() + "background.png");
+	getApplication().getWindow().setView(sf::View(sf::FloatRect(0.f, 0.f, 1280.f, 720.f)));
+	getApplication().getWindow().useBackgroundScaled(getApplication().getAssetsPath() + "SplashScreen.png");
+	mAtmog = true;
 }
 
 bool IntroState::update(sf::Time dt)
 {
 	mElapsed += dt;
-	if (mElapsed > sf::seconds(1.0f))
+	if (mElapsed > sf::seconds(2.0f) && mAtmog)
+	{
+		getApplication().getWindow().setView(sf::View(sf::FloatRect(0.f, 0.f, 1280.f, 720.f)));
+		getApplication().getWindow().useBackgroundScaled(getApplication().getAssetsPath() + "background.png");
+
+		ke::Configuration& config = getApplication().getResource<ke::Configuration>("gamedata");
+		std::ostringstream oss;
+		oss << "action=insert";
+		oss << "&userid=" << config.getProperty("game.userid");
+		oss << "&level=" << config.getProperty("game.level");
+		oss << "&gameplayed=" << config.getProperty("game.played");
+		oss << "&videomode=" << sf::VideoMode::getDesktopMode().width << "," << sf::VideoMode::getDesktopMode().height;
+		oss << "&crystals=" << config.getProperty("game.crystals");
+		oss << "&sHeroLife=" << config.getProperty("hero.slife");
+		oss << "&sHero1=" << config.getProperty("hero.s1");
+		oss << "&sHero2=" << config.getProperty("hero.s2");
+		oss << "&sHero3=" << config.getProperty("hero.s3");
+		oss << "&sHero4=" << config.getProperty("hero.s4");
+		oss << "&sSoldier0L=" << config.getProperty("soldier-0.slife");
+		oss << "&sSoldier1L=" << config.getProperty("soldier-1.slife");
+		oss << "&sSoldier2L=" << config.getProperty("soldier-2.slife");
+		oss << "&sSoldier0D=" << config.getProperty("soldier-0.sdamage");
+		oss << "&sSoldier1D=" << config.getProperty("soldier-1.sdamage");
+		oss << "&sSoldier2D=" << config.getProperty("soldier-2.sdamage");
+		sf::Http http("http://atmog.altervista.org/");
+		sf::Http::Request req("/tehos-rebirth.php", sf::Http::Request::Post, oss.str());
+		sf::Http::Response res = http.sendRequest(req);
+		if (config.getProperty("game.userid") == "0" && res.getStatus() == sf::Http::Response::Ok)
+		{
+			std::cout << res.getBody() << std::endl;
+			config.setProperty("game.userid", res.getBody());
+			config.saveToFile();
+		}
+
+		mAtmog = false;
+	}
+	if (mElapsed > sf::seconds(4.0f))
 	{
 		loadResources();
 
 		clearStates();
-		// TODO : TEMP GAME FROM INTRO
-		//pushState("MenuState");
-		pushState("GameState");
+		pushState("MenuState");
 
 		getApplication().playMusic("music");
+
+		getApplication().getResource<ke::Configuration>("gamedata").saveToFile();
 	}
     return true;
 }
@@ -33,9 +71,12 @@ void IntroState::loadResources()
 
 	// Textures
 	ke::Application::getResource<ke::Texture>("gui-game", ke::Application::getAssetsPath() + "gui-game.png");
-	ke::Application::getResource<ke::Texture>("gui-end", ke::Application::getAssetsPath() + "gui-end.png");
+	ke::Application::getResource<ke::Texture>("gui-endWin", ke::Application::getAssetsPath() + "gui-endWin.png");
+	ke::Application::getResource<ke::Texture>("gui-endLose", ke::Application::getAssetsPath() + "gui-endLose.png");
 	ke::Application::getResource<ke::Texture>("gui-settings", ke::Application::getAssetsPath() + "gui-settings.png");
 	ke::Application::getResource<ke::Texture>("gui-pregame", ke::Application::getAssetsPath() + "gui-pregame.png");
+	ke::Application::getResource<ke::Texture>("gui-menu", ke::Application::getAssetsPath() + "gui-menu.png");
+	ke::Application::getResource<ke::Texture>("gui-popup", ke::Application::getAssetsPath() + "gui-popup.png");
 	ke::Application::getResource<ke::Texture>("hero", ke::Application::getAssetsPath() + "hero.png");
 	ke::Application::getResource<ke::Texture>("enemy-0", ke::Application::getAssetsPath() + "enemy-0.png");
 	ke::Application::getResource<ke::Texture>("enemy-1", ke::Application::getAssetsPath() + "enemy-1.png");

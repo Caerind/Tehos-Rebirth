@@ -10,7 +10,7 @@ Entity::Entity(ke::Scene& scene, std::size_t type)
 	, mTimeFactor(1.f)
 	, mSlowRemaining(sf::Time::Zero)
 {
-	mLifeBar.setScale(sf::Vector2f(0.25f, 0.5f));
+	mLifeBar.setScale(sf::Vector2f(0.125f, 0.25f));
 }
 
 Entity::~Entity()

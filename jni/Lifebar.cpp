@@ -5,10 +5,10 @@ Lifebar::Lifebar()
 	mPercent = 100.f;
 
 	mBack.setTexture(ke::Application::getResource<ke::Texture>("lifebar"));
-	mBack.setTextureRect(sf::IntRect(0, 0, 300, 40));
+	mBack.setTextureRect(sf::IntRect(0, 0, 600, 80));
 
 	mTop.setTexture(ke::Application::getResource<ke::Texture>("lifebar"));
-	mTop.setTextureRect(sf::IntRect(0, 40, 300, 40));
+	mTop.setTextureRect(sf::IntRect(0, 80, 600, 80));
 }
 
 Lifebar::~Lifebar()
@@ -26,7 +26,7 @@ void Lifebar::render(sf::RenderTarget& target)
 	{
 		target.draw(mBack);
 
-		mTop.setTextureRect(sf::IntRect(0, 40, static_cast<int>(mPercent * 300), 40));
+		mTop.setTextureRect(sf::IntRect(0, 80, static_cast<int>(mPercent * 600), 80));
 
 		target.draw(mTop);
 	}

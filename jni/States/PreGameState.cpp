@@ -11,14 +11,13 @@ PreGameState::PreGameState() : ke::State()
 	mMask.setSize(sf::Vector2f(1280.f, 720.f));
 	mMask.setFillColor(sf::Color(20, 20, 20, 128));
 
-	mPage = 0;
+	mButtonsPerPage = 10;
 	mMaxLevel = getApplication().getResource<ke::Configuration>("gamedata").getPropertyAs<int>("game.level");
+	mPage = (mMaxLevel / static_cast<int>(mButtonsPerPage));
 
-	// TODO : PLACE PREGAME BUTTONS
-	mButtonsPerPage = 8;
-	mCloseButton = sf::FloatRect(640.f + 0.f, 360.f + 0.f, 0.f, 0.f);
-	mLeftArrow = sf::FloatRect(640.f + 0.f, 360.f + 0.f, 0.f, 0.f);
-	mRightArrow = sf::FloatRect(640.f + 0.f, 360.f + 0.f, 0.f, 0.f);
+	mCloseButton = sf::FloatRect(320.f + 502.f, 180.f + 21.f, 75.f, 75.f);
+	mLeftArrow = sf::FloatRect(320.f + 21.f, 180.f + 198.f, 73.f, 47.f);
+	mRightArrow = sf::FloatRect(320.f + 548.f, 180.f + 198.f, 73.f, 47.f);
 
 	ke::Font& font = getApplication().getResource<ke::Font>("font");
 	for (std::size_t i = 0; i < mButtonsPerPage; i++)
@@ -29,7 +28,7 @@ PreGameState::PreGameState() : ke::State()
 		mTexts[i].setOutlineColor(sf::Color::Black);
 		mTexts[i].setOutlineThickness(2.f);
 		mTexts[i].setCharacterSize(20);
-		mTexts[i].setString("XX");
+		mTexts[i].setString(ke::toString(i));
 		mTexts[i].setOrigin(mTexts[i].getGlobalBounds().width * 0.5f, mTexts[i].getGlobalBounds().height * 0.5f);
 	}
 
@@ -44,7 +43,7 @@ bool PreGameState::handleEvent(const sf::Event& event)
 {
 	if ((event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) || event.type == sf::Event::TouchBegan)
 	{
-		sf::Vector2f p = getApplication().getWindow().getPointerPosition();
+		sf::Vector2f p = getApplication().getWindow().getPointerPositionView(getApplication().getWindow().getView());
 		if (mCloseButton.contains(p) || !mWindow.getGlobalBounds().contains(p))
 		{
 			getApplication().playSound("select");
@@ -66,8 +65,9 @@ bool PreGameState::handleEvent(const sf::Event& event)
 
 		for (std::size_t i = 0; i < mButtonsPerPage; i++)
 		{
-			sf::FloatRect button = sf::FloatRect();
-			// TODO : PLACE PREGAME BUTTONS
+			float x = 320.f + 114.f + (i % (mButtonsPerPage / 2)) * 87.f;
+			float y = 180.f + 153.f + (i / (mButtonsPerPage / 2)) * 82.f;
+			sf::FloatRect button = sf::FloatRect(x, y, 64.f, 64.f);
 			int level = mPage * mButtonsPerPage + i;
 			if (button.contains(p) && mMaxLevel >= level)
 			{
@@ -104,8 +104,10 @@ void PreGameState::updatePage()
 	{
 		int level = mPage * mButtonsPerPage + i;
 		mTexts[i].setString(ke::toString(level));
-		mTexts[i].setOrigin(mTexts[i].getGlobalBounds().width * 0.5f, mTexts[i].getGlobalBounds().height * 0.5f);
+		mTexts[i].setOrigin(mTexts[i].getGlobalBounds().width * 0.5f, mTexts[i].getGlobalBounds().height * 0.5f - 5.f);
 		mTexts[i].setFillColor((level <= mMaxLevel) ? sf::Color::White : sf::Color::Black);
-		// TODO : PLACE PREGAME BUTTONS
+		float x = 320.f + 114.f + (i % (mButtonsPerPage / 2)) * 87.f + 32.f;
+		float y = 180.f + 153.f + (i / (mButtonsPerPage / 2)) * 82.f + 32.f;
+		mTexts[i].setPosition(x, y);
 	}
 }
